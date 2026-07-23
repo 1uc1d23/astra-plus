@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Physics Vaul Clone</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0; height: 100vh; background: #000; overflow: hidden;
+    }
+
+    #app-wrapper {
+      width: 100%; height: 100%; background: #f3f4f6;
+      display: flex; align-items: center; justify-content: center;
+      transform-origin: center top;
+    }
+
+    .open-btn {
+      padding: 12px 24px; font-size: 16px; font-weight: 600;
+      background: #111827; color: white; border: none; border-radius: 8px; cursor: pointer;
+    }
+
+    .drawer-container {
+      position: fixed; inset: 0; z-index: 1000; display: none; align-items: flex-end;
+    }
+    .drawer-container.active { display: flex; }
+     
+    .backdrop {
+      position: absolute; inset: 0; background: rgba(0, 0, 0, 0.4);
+      opacity: 0;
+    }
+
+    .drawer-content {
+      position: absolute; 
+      
+      /* Change this width to whatever you want; it will ALWAYS stay centered */
+      width: 70%; 
+      left: 50%; 
+      transform: translateX(-50%) translateY(100%);
+      
+      /* Hidden height buffer for the upward stretch rubber-band effect */
+      height: 90vh; 
+      margin-bottom: -10vh; 
+      
+      background: white; border-top-left-radius: 16px; border-top-right-radius: 16px;
+      touch-action: none;
+       
+      /* Prevents messy text highlighting during fast swipes */
+      user-select: none;
+      -webkit-user-select: none;
+    }
+     
+    .smooth-snap {
+         touch-action: none;
+    will-change: transform;
+    transition: transform .5s cubic-bezier(.32, .72, 0, 1);
+    animation-duration: .5s;
+    animation-timing-function: cubic-bezier(0.32,0.72,0,1);
+    }
+
+    .smooth-bg {
+  transition:
+    transform 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+    border-radius 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+     
+    .handle-area {
+      width: 100%; padding: 16px 0; display: flex; justify-content: center;
+    }
+    .handle { width: 48px; height: 5px; background: #e5e7eb; border-radius: 3px; }
+     
+    .body-content { padding: 0 24px 40px; text-align: center; }
+    .body-content.dragging { pointer-events: none; }
+  </style>
+</head>
+<body>
+
+  <div id="app-wrapper">
+    <button class="open-btn" onclick="openDrawer()">Open Premium Drawer</button>
+  </div>
+
+  <div class="drawer-container" id="drawerContainer">
+    <div class="backdrop" id="backdrop" onclick="closeDrawer()"></div>
+    <div class="drawer-content" id="drawerContent">
+      <div class="handle-area" id="handleArea">
+        <div class="handle"></div>
+      </div>
+      <div class="body-content" id="bodyContent">
+        <h2>Perfect Custom Physics</h2>
+        <p>This layout automatically adapts to any width changes, tracking drag positions flawlessly on desktop or mobile viewports.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const wrapper = document.getElementById('app-wrapper');
+    const container = document.getElementById('drawerContainer');
+    const content = document.getElementById('drawerContent');
+    const handle = document.getElementById('handleArea');
+    const backdrop = document.getElementById('backdrop');
+    const bodyContent = document.getElementById('bodyContent');
+
+    let isDragging = false;
+    let startY = 0;
+    let currentY = 0;
+    const drawerHeight = window.innerHeight * 0.6;
+
+    // Physics tracking states
+    let lastY = 0;
+    let lastTime = 0;
+    let velocityY = 0;
+    let allowRubberBand = false;
+
+    function updateDynamicStyles(yOffset) {
+      let progress = (drawerHeight - yOffset) / drawerHeight;
+      progress = Math.max(0, Math.min(progress, 1.1));
+
+      const scale = 1 - (progress * 0.03);
+      const translateY = progress * 2;
+      wrapper.style.transform = `scale(${scale}) translateY(${translateY}vh)`;
+      wrapper.style.borderRadius = `${progress * 8}px`;
+      backdrop.style.opacity = progress;
+    }
+
+    function openDrawer() {
+      container.classList.add('active');
+      content.style.transform = 'translateX(-50%) translateY(100%)';
+      updateDynamicStyles(drawerHeight); 
+
+      content.classList.add('smooth-snap');
+      wrapper.classList.add('smooth-bg');
+      backdrop.classList.add('smooth-bg');
+       
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          content.style.transform = 'translateX(-50%) translateY(0)';
+          updateDynamicStyles(0);
+        });
+      });
+    }
+
+    function closeDrawer() {
+      content.classList.add('smooth-snap');
+      wrapper.classList.add('smooth-bg');
+      backdrop.classList.add('smooth-bg');
+
+      content.style.transform = 'translateX(-50%) translateY(100%)';
+      updateDynamicStyles(drawerHeight);  
+       
+      setTimeout(() => container.classList.remove('active'), 400);
+    }
+
+    function startDrag(e) {
+      isDragging = true;
+      startY = e.clientY || (e.touches && e.touches[0].clientY) || e.pageY;
+       
+      content.classList.remove('smooth-snap'); 
+      wrapper.classList.remove('smooth-bg');
+      backdrop.classList.remove('smooth-bg');
+
+      bodyContent.classList.add('dragging');
+    // Lock the gate down at the start of every fresh drag session
+    hasPulledDown = false;
+    }
+
+    let lastClientY = 0;
+
+    // Gate tracker: becomes true ONLY after the cursor moves below the resting limit (deltaY > 0)
+    let hasPulledDown = false;
+
+    function drag(e) {
+      if (!isDragging) return;
+       
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY) || e.pageY;
+      if (!clientY) return;
+
+      let deltaY = clientY - startY;
+
+      // The moment the cursor moves downward past the starting point, unlock the gate
+      if (deltaY > 0) {
+        hasPulledDown = true;
+      }
+
+      if (deltaY < 0) { 
+        // We are pulling up past the limit
+        if (hasPulledDown) {
+          // Allowed because the user "wound up" by dragging down first
+          currentY = deltaY * 0.25; 
+        } else {
+          // Hard wall lock if trying to drag straight up from a dead stop
+          currentY = 0; 
+        }
+      } else {
+        // Normal downward tracking
+        currentY = deltaY;
+      }
+
+      content.style.transform = `translateX(-50%) translateY(${currentY}px)`;
+      updateDynamicStyles(currentY);
+    }
+    
+    function endDrag() {
+      if (!isDragging) return;
+      isDragging = false;
+       
+      content.classList.add('smooth-snap');
+      wrapper.classList.add('smooth-bg');
+      backdrop.classList.add('smooth-bg');
+       
+      bodyContent.classList.remove('dragging');
+
+      if (currentY > 120) { 
+        closeDrawer();
+      } else {
+        content.style.transform = 'translateX(-50%) translateY(0)';
+        updateDynamicStyles(0);
+      }
+      currentY = 0;
+    }
+
+    handle.addEventListener('mousedown', startDrag);
+    window.addEventListener('mousemove', drag);
+    window.addEventListener('mouseup', endDrag);
+
+    handle.addEventListener('touchstart', startDrag, { passive: true });
+    window.addEventListener('touchmove', drag, { passive: false });
+    window.addEventListener('touchend', endDrag);
+  </script>
+
+</body>
+</html>
