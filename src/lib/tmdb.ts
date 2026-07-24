@@ -213,7 +213,40 @@ export const api = {
   movie: (id: number) => tmdb<Media>(`/movie/${id}`, { append_to_response: "images,credits,videos,recommendations", include_image_language: "en,null" }),
   tv: (id: number) => tmdb<Media>(`/tv/${id}`, { append_to_response: "images,credits,videos,recommendations", include_image_language: "en,null" }),
   season: (tvId: number, season: number) => tmdb<{ episodes: Episode[]; name: string; overview: string; poster_path: string | null }>(`/tv/${tvId}/season/${season}`),
-  search: (q: string) => tmdb<{ results: Media[] }>(`/search/multi`, { query: q, include_adult: "false" }),
+  search: async (q: string) => {
+  const [movies, tv] = await Promise.all([
+    tmdb<{ results: Media[] }>("/search/movie", {
+      query: q,
+      include_adult: "false",
+    }),
+    tmdb<{ results: Media[] }>("/search/tv", {
+      query: q,
+      include_adult: "false",
+    }),
+  ]);
+
+  const results = [
+    ...movies.results.map((m) => ({ ...m, media_type: "movie" as const })),
+    ...tv.results.map((m) => ({ ...m, media_type: "tv" as const })),
+  ];
+
+  return {
+    results: results
+      .filter((item) =>
+        item.vote_count >= 20 &&
+        item.popularity >= 5 &&
+        item.poster_path !== null
+      )
+      .sort((a, b) => {
+        // prioritize popularity first
+        if (b.popularity !== a.popularity) {
+          return b.popularity - a.popularity;
+        }
+
+        return b.vote_count - a.vote_count;
+      }),
+  };
+},
   genresMovie: () => tmdb<{ genres: { id: number; name: string }[] }>(`/genre/movie/list`),
   // Replace or add to api object in tmdb.ts:
   genresTV: () => tmdb<{ genres: { id: number; name: string }[] }>(`/genre/tv/list`),
