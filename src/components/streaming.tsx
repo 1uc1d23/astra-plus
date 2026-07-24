@@ -361,7 +361,7 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
           <img
             src={IMG(m.backdrop_path, "w1280")}
             alt=""
-            className="h-full w-full object-cover [mask-image:linear-gradient(to_top,transparent,black_100%)]"
+            className="h-full w-full object-cover pointer-events-none select-none [mask-image:linear-gradient(to_top,transparent,black_100%)]"
           />
         )}
         <div className="absolute inset-x-0 bottom-0 p-6 md:p-10">
