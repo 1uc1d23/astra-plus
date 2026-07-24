@@ -1,5 +1,10 @@
 export const TMDB_KEY = "ea021b3b0775c8531592713ab727f254";
 export const TMDB_BASE = "https://api.themoviedb.org/3";
+
+// TMDB keyword IDs that should always be hidden.
+export const BANNED_KEYWORDS = [
+  155477, 256466, 254375, 157094, 354619, 164865, 350552, 378613, 195669, 356759
+];
 export const IMG = (path: string | null | undefined, size: "w200" | "w300" | "w500" | "w780" | "w1280" | "original" = "w500") =>
   path ? `https://image.tmdb.org/t/p/${size}${path}` : "";
 
@@ -44,10 +49,32 @@ export type Episode = {
 
 async function tmdb<T>(path: string, params: Record<string, string | number> = {}): Promise<T> {
   const url = new URL(TMDB_BASE + path);
+
   url.searchParams.set("api_key", TMDB_KEY);
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v));
+
+  for (const [k, v] of Object.entries(params)) {
+    url.searchParams.set(k, String(v));
+  }
+
+  // Automatically hide banned TMDB keywords on Discover endpoints.
+  if (
+    path.startsWith("/discover/movie") ||
+    path.startsWith("/discover/tv")
+  ) {
+    const existing = url.searchParams.get("without_keywords");
+
+    const banned = BANNED_KEYWORDS.join(",");
+
+    url.searchParams.set(
+      "without_keywords",
+      existing ? `${existing},${banned}` : banned
+    );
+  }
+
   const res = await fetch(url.toString());
+
   if (!res.ok) throw new Error("TMDB error " + res.status);
+
   return res.json();
 }
 
@@ -151,14 +178,38 @@ export const api = {
   trending: (window: "day" | "week" = "week") => tmdb<{ results: Media[] }>(`/trending/all/${window}`),
   trendingMovies: () => tmdb<{ results: Media[] }>(`/trending/movie/week`),
   trendingTV: () => tmdb<{ results: Media[] }>(`/trending/tv/week`),
-  popularMovies: () => tmdb<{ results: Media[] }>(`/movie/popular`),
-  topRatedMovies: () => tmdb<{ results: Media[] }>(`/movie/top_rated`),
+  popularMovies: () =>
+  tmdb<{ results: Media[] }>(`/discover/movie`, {
+    sort_by: "popularity.desc",
+  }),
+  topRatedMovies: () =>
+  tmdb<{ results: Media[] }>(`/discover/movie`, {
+    sort_by: "vote_average.desc",
+    vote_count_gte: 500,
+  }),
   nowPlaying: () => tmdb<{ results: Media[] }>(`/movie/now_playing`),
   upcoming: () => tmdb<{ results: Media[] }>(`/movie/upcoming`),
-  popularTV: () => tmdb<{ results: Media[] }>(`/tv/popular`),
-  topRatedTV: () => tmdb<{ results: Media[] }>(`/tv/top_rated`),
+  popularTV: () =>
+  tmdb<{ results: Media[] }>(`/discover/tv`, {
+    sort_by: "popularity.desc",
+  }),
+  topRatedTV: () =>
+  tmdb<{ results: Media[] }>(`/discover/tv`, {
+    sort_by: "vote_average.desc",
+    vote_count_gte: 200,
+  }),
   discoverMovies: (genre?: number) =>
-    tmdb<{ results: Media[] }>(`/discover/movie`, genre ? { with_genres: genre, sort_by: "popularity.desc" } : { sort_by: "popularity.desc" }),
+  tmdb<{ results: Media[] }>(
+    `/discover/movie`,
+    genre
+      ? {
+          with_genres: genre,
+          sort_by: "popularity.desc",
+        }
+      : {
+          sort_by: "popularity.desc",
+        }
+  ),
   movie: (id: number) => tmdb<Media>(`/movie/${id}`, { append_to_response: "images,credits,videos,recommendations", include_image_language: "en,null" }),
   tv: (id: number) => tmdb<Media>(`/tv/${id}`, { append_to_response: "images,credits,videos,recommendations", include_image_language: "en,null" }),
   season: (tvId: number, season: number) => tmdb<{ episodes: Episode[]; name: string; overview: string; poster_path: string | null }>(`/tv/${tvId}/season/${season}`),

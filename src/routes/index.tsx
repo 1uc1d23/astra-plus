@@ -201,7 +201,7 @@ function Home() {
         <Row label="Top Rated Movies" items={topRatedMovies.data?.results} onOpen={openDetail} />
         <Row label="Now Playing" items={nowPlaying.data?.results} onOpen={openDetail} />
         <Row label="Top Rated Series" items={topRatedTV.data?.results?.map(m => ({ ...m, media_type: "tv" as const }))} onOpen={openDetail} />
-        <Row label="Coming Soon" items={upcoming.data?.results} onOpen={openDetail} />
+        <Row label="New Releases" items={upcoming.data?.results} onOpen={openDetail} />
       </div>
 
       <footer className="mt-16 border-t border-border py-12 px-6 md:px-12 bg-background">

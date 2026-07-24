@@ -108,7 +108,11 @@ export function DiscoverBar({
           placeholder="All Countries"
           options={[
             { value: "", label: "All Countries" },
-            ...countries.map((c) => ({ value: c.iso_3166_1, label: c.english_name })),
+            ...countries.map((c) => ({
+              value: c.iso_3166_1,
+              label: c.label || c.english_name,
+              flag: getAppleFlagUrl(c.english_name, c.iso_3166_1),
+            })),
           ]}
         />
 
@@ -146,7 +150,7 @@ function SelectDropdown({
 }: {
   value: string;
   onChange: (v: string) => void;
-  options: { value: string; label: string }[];
+  options: { value: string; label: string; flag?: string; }[];
   placeholder?: string;
   leftIcon?: React.ReactNode;
 }) {
@@ -154,9 +158,20 @@ function SelectDropdown({
     <Select.Root value={value} onValueChange={onChange}>
       <Select.Trigger className="inline-flex items-center justify-between gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer min-w-[130px]">
         <div className="flex items-center gap-1.5 truncate">
-          {leftIcon}
-          <Select.Value placeholder={placeholder} />
-        </div>
+  {leftIcon}
+
+  {options.find((opt) => opt.value === value)?.flag && (
+    <img
+      src={options.find((opt) => opt.value === value)?.flag}
+      alt=""
+      className="h-4 w-4 rounded-sm object-cover"
+    />
+  )}
+
+  <span className="truncate">
+    {options.find((opt) => opt.value === value)?.label || placeholder}
+  </span>
+</div>
         <Select.Icon>
           <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0" />
         </Select.Icon>
@@ -166,7 +181,7 @@ function SelectDropdown({
         <Select.Content
           position="popper"
           sideOffset={6}
-          className="z-[100] max-h-[48vh] w-[var(--radix-select-trigger-width)] min-w-[160px] overflow-hidden rounded-xl border border-border bg-surface text-foreground shadow-2xl p-1 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
+          className="z-[100] max-h-[48vh] w-[var(--radix-select-trigger-width)] min-w-[180px] overflow-hidden rounded-xl border border-border bg-surface text-foreground shadow-2xl p-1 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
         >
           <Select.Viewport className="p-1 overflow-y-auto">
             {options.map((opt) => (
@@ -180,7 +195,17 @@ function SelectDropdown({
                     <Check className="h-4 w-4 text-accent" />
                   </Select.ItemIndicator>
                 </span>
-                <Select.ItemText>{opt.label}</Select.ItemText>
+                <div className="flex items-center gap-2">
+                  {opt.flag && (
+                    <img
+                      src={opt.flag}
+                      alt=""
+                      className="h-5 w-5 object-cover"
+                      loading="lazy"
+                    />
+                  )}
+                  <Select.ItemText>{opt.label}</Select.ItemText>
+                </div>
               </Select.Item>
             ))}
           </Select.Viewport>
@@ -188,6 +213,21 @@ function SelectDropdown({
       </Select.Portal>
     </Select.Root>
   );
+}
+
+function getAppleFlagUrl(countryName: string, iso: string) {
+  const code = iso.toUpperCase();
+
+  const unicode = [...code]
+    .map((c) => (0x1f1e6 + c.charCodeAt(0) - 65).toString(16))
+    .join("-");
+
+  const slug = countryName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return `https://em-content.zobj.net/source/apple/453/flag-${slug}_${unicode}.png`;
 }
 
 const searchSchema = z.object({
@@ -209,6 +249,8 @@ function BrowsePage() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const { type } = search;
+
+  const today = new Date().toISOString().split("T")[0];
 
   // Sync filter values directly with URL query parameters
   const selectedGenre = search.genre || "";
@@ -271,11 +313,15 @@ function BrowsePage() {
   const discoverQuery = useQuery({
     queryKey: ["discover", selectedMediaType, selectedGenre, selectedProvider, selectedSort, selectedCountry],
     queryFn: async () => {
-      const params: Record<string, string | number> = {
-        sort_by: selectedSort,
-        include_adult: "false",
-        page: 1,
-      };
+      const today = new Date().toISOString().split("T")[0];
+
+const params: Record<string, string | number> = {
+  sort_by: selectedSort,
+  include_adult: "false",
+  page: 1,
+  primary_release_date_lte: today,
+  first_air_date_lte: today,
+};
 
       if (selectedGenre) params.with_genres = selectedGenre;
       if (selectedProvider) {
@@ -287,15 +333,26 @@ function BrowsePage() {
       // Fetch movies, series, or both depending on selected type
       if (selectedMediaType === "all") {
         const [movies, tv] = await Promise.all([
-          api.discover("movie", params),
-          api.discover("tv", params),
+          api.discover("movie", {
+  ...params,
+  primary_release_date_lte: today,
+}),
+api.discover("tv", {
+  ...params,
+  first_air_date_lte: today,
+}),
         ]);
 
         // Combine and sort by chosen metric
         const combined = [
-          ...(movies.results || []).map(item => ({ ...item, media_type: "movie" as const })),
-          ...(tv.results || []).map(item => ({ ...item, media_type: "tv" as const }))
-        ];
+  ...(movies.results || [])
+    .filter(item => !item.release_date || item.release_date <= today)
+    .map(item => ({ ...item, media_type: "movie" as const })),
+
+  ...(tv.results || [])
+    .filter(item => !item.first_air_date || item.first_air_date <= today)
+    .map(item => ({ ...item, media_type: "tv" as const }))
+];
 
         if (selectedSort.includes("vote_average")) {
           combined.sort((a, b) => b.vote_average - a.vote_average);
@@ -306,13 +363,29 @@ function BrowsePage() {
         return { results: combined };
       }
 
-      const res = await api.discover(selectedMediaType as "movie" | "tv", params);
+      const discoverParams = { ...params };
+
+if (selectedMediaType === "movie") {
+  discoverParams.primary_release_date_lte = today;
+}
+
+if (selectedMediaType === "tv") {
+  discoverParams.first_air_date_lte = today;
+}
+
+const res = await api.discover(selectedMediaType as "movie" | "tv", discoverParams);
       return {
-        results: (res.results || []).map(item => ({
-          ...item,
-          media_type: selectedMediaType as "movie" | "tv"
-        }))
-      };
+  results: (res.results || [])
+    .filter(item =>
+      selectedMediaType === "movie"
+        ? !item.release_date || item.release_date <= today
+        : !item.first_air_date || item.first_air_date <= today
+    )
+    .map(item => ({
+      ...item,
+      media_type: selectedMediaType as "movie" | "tv"
+    }))
+};
     },
     enabled: type === "discover",
   });
@@ -378,7 +451,7 @@ function BrowsePage() {
               { iso_3166_1: "EG", english_name: "Egypt" },
               { iso_3166_1: "FR", english_name: "France" },
               { iso_3166_1: "DE", english_name: "Germany" },
-              { iso_3166_1: "HK", english_name: "Hong Kong" },
+              { iso_3166_1: "HK", english_name: "Hong Kong sar china", label: "Hong Kong" },
               { iso_3166_1: "IN", english_name: "India" },
               { iso_3166_1: "ID", english_name: "Indonesia" },
               { iso_3166_1: "IE", english_name: "Ireland" },
@@ -400,9 +473,9 @@ function BrowsePage() {
               { iso_3166_1: "TW", english_name: "Taiwan" },
               { iso_3166_1: "TH", english_name: "Thailand" },
               { iso_3166_1: "TR", english_name: "Turkey" },
-              { iso_3166_1: "AE", english_name: "UAE" },
-              { iso_3166_1: "GB", english_name: "UK" },
-              { iso_3166_1: "US", english_name: "United States" },
+              { iso_3166_1: "AE", english_name: "United Arab Emirates", label: "UAE" },
+              { iso_3166_1: "GB", english_name: "United Kingdom", label: "UK" },
+              { iso_3166_1: "US", english_name: "United States", label: "USA"},
             ]}
             selectedGenre={selectedGenre}
             setSelectedGenre={setSelectedGenre}
