@@ -267,17 +267,18 @@ export function DetailDrawer({
   onPlay: (m: Media, s?: number, e?: number) => void;
   onOpen: (m: Media) => void;
 }) {
-  return (
-    <Drawer.Root open={open} onOpenChange={onOpenChange} shouldScaleBackground>
+  return (<Drawer.Root open={open} onOpenChange={onOpenChange} shouldScaleBackground>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-40 bg-black/70" />
         <Drawer.Content className="fixed bottom-0 left-0 right-0 overflow-hidden z-50 mx-auto mt-24 flex h-[90vh] max-w-[1000px] w-full flex-col rounded-t-3xl bg-background outline-none">
           <Drawer.Title className="sr-only">{media ? title(media) : "Details"}</Drawer.Title>
           <Drawer.Description className="sr-only">{media?.overview ?? ""}</Drawer.Description>
 
-          <div className="absolute left-1/2 -translate-x-1/2 top-0 mt-3 z-50 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/40" />
+          {/* Expanded draggable hit-area covering the full width */}
+          <div className="absolute top-0 left-0 right-0 z-50 flex h-8 w-full items-center justify-center">
+            <div className="h-1.5 w-12 shrink-0 rounded-full bg-white/30" />
+          </div>
 
-          {/* THIS DIV IS WHAT SCROLLS AND HIDES THE SCROLLBAR */}
           <DrawerScrollContainer media={media} onPlay={onPlay} onOpen={onOpen} />
         </Drawer.Content>
       </Drawer.Portal>
