@@ -3,7 +3,7 @@ export const TMDB_BASE = "https://api.themoviedb.org/3";
 
 // TMDB keyword IDs that should always be hidden.
 export const BANNED_KEYWORDS = [
-  155477, 256466, 254375, 157094, 354619, 164865, 350552, 378613, 195669, 356759
+  155477, 256466, 254375, 157094, 354619, 164865, 350552, 378613, 195669, 356759, 190370, 264386, 33998, 445, 7344, 157813
 ];
 export const IMG = (path: string | null | undefined, size: "w200" | "w300" | "w500" | "w780" | "w1280" | "original" = "w500") =>
   path ? `https://image.tmdb.org/t/p/${size}${path}` : "";
