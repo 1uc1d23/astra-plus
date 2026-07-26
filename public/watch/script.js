@@ -15,6 +15,8 @@ window.MEDIA_INFO = { title: '', subtitle: '', description: '', logo: '' };
     const playIcon = document.getElementById('playIcon');
     const pipBtn = document.getElementById('pipBtn');
     const fsBtn = document.getElementById('fsBtn');
+    const rewind10btn = document.getElementById('rewind10btn');
+    const forward10btn = document.getElementById('forward10btn')
     const fsIcon = document.getElementById('fsIcon');
     const toast = document.getElementById('toast');
     const speedToast = document.getElementById('1.5xSpeed');
@@ -1619,6 +1621,19 @@ window.MEDIA_INFO = { title: '', subtitle: '', description: '', logo: '' };
     // Mouse / touch to show controls
     ['mousemove', 'touchstart', 'touchmove', 'mouseenter'].forEach(eventName => {
         playerWrap.addEventListener(eventName, showControls, { passive: true });
+    });
+
+    rewind10btn.addEventListener('click', () => {
+        video.currentTime = Math.max((video.currentTime || 0) - 10, 0);
+        showToast('<i data-feather="rewind" style="margin-right:6px;"></i> 10s', 800);
+        if (typeof feather !== 'undefined') feather.replace({ width: 14, height: 14, fill: 'currentColor' });
+        showControls();
+    });
+    forward10btn.addEventListener('click', () => {
+        video.currentTime = Math.min((video.currentTime || 0) + 10, video.duration || Infinity);
+        showToast('<i data-feather="fast-forward" style="margin-right:6px;"></i> 10s', 800);
+        if (typeof feather !== 'undefined') feather.replace({ width: 14, height: 14, fill: 'currentColor' });
+        showControls();
     });
 
     // Video state events
