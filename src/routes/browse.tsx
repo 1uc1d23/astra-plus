@@ -5,7 +5,7 @@ import { api, embedUrl, type Media } from "@/lib/tmdb";
 import { DetailDrawer, MovieCard, Nav, PageShell, Player } from "@/components/streaming";
 import { z } from "zod";
 import * as Select from "@radix-ui/react-select";
-import { ChevronDown, Filter, Globe, Shuffle, Check, RotateCcw } from "lucide-react";
+import { ChevronDown, Filter, Globe, Shuffle, Check, RotateCcw, ArrowLeft, ArrowRight } from "lucide-react";
 
 interface DiscoverBarProps {
   genres: { id: number; name: string }[];
@@ -237,7 +237,8 @@ const searchSchema = z.object({
   sort: z.string().catch("popularity.desc"),
   mediaType: z.enum(["all", "movie", "tv"]).catch("all"),
   country: z.string().optional(),
-}).catch({ type: "movie", sort: "popularity.desc", mediaType: "all" });
+  page: z.coerce.number().catch(1),
+}).catch({ type: "movie", sort: "popularity.desc", mediaType: "all", page: 1 });
 
 export const Route = createFileRoute("/browse")({
   component: BrowsePage,
@@ -258,13 +259,15 @@ function BrowsePage() {
   const selectedSort = search.sort || "popularity.desc";
   const selectedMediaType = search.mediaType || "all";
   const selectedCountry = search.country || "";
+  const currentPage = search.page || 1;
 
-  // Helper to update URL search params on dropdown changes
-  const updateSearch = (newParams: Record<string, string>) => {
+  // Helper to update URL search params on dropdown changes (resets page to 1 on filter change unless specified)
+  const updateSearch = (newParams: Record<string, string | number>, resetPage = true) => {
     navigate({
       search: (prev) => ({
         ...prev,
         ...newParams,
+        ...(resetPage && !('page' in newParams) ? { page: 1 } : {}),
       }),
       replace: true,
     });
@@ -275,6 +278,7 @@ function BrowsePage() {
   const setSelectedSort = (v: string) => updateSearch({ sort: v });
   const setSelectedMediaType = (v: string) => updateSearch({ mediaType: v });
   const setSelectedCountry = (v: string) => updateSearch({ country: v });
+  const setPage = (p: number) => updateSearch({ page: p }, false);
 
   const handleResetFilters = () => {
     updateSearch({
@@ -283,6 +287,7 @@ function BrowsePage() {
       sort: "popularity.desc",
       mediaType: "all",
       country: "",
+      page: 1,
     });
   };
 
@@ -309,50 +314,41 @@ function BrowsePage() {
   const { data: movieGenres } = useQuery({ queryKey: ["genres-movie"], queryFn: api.genresMovie });
   const { data: tvGenres } = useQuery({ queryKey: ["genres-tv"], queryFn: api.genresTV });
 
-  // Discover Query with full TMDB dynamic parameter matching
+  // Discover Query with full TMDB dynamic parameter matching & pagination
   const discoverQuery = useQuery({
-    queryKey: ["discover", selectedMediaType, selectedGenre, selectedProvider, selectedSort, selectedCountry],
+    queryKey: ["discover", selectedMediaType, selectedGenre, selectedProvider, selectedSort, selectedCountry, currentPage],
     queryFn: async () => {
       const today = new Date().toISOString().split("T")[0];
 
-const params: Record<string, string | number> = {
-  sort_by: selectedSort,
-  include_adult: "false",
-  page: 1,
-  primary_release_date_lte: today,
-  first_air_date_lte: today,
-};
+      const params: Record<string, string | number> = {
+        sort_by: selectedSort,
+        include_adult: "false",
+        page: currentPage,
+        primary_release_date_lte: today,
+        first_air_date_lte: today,
+      };
 
       if (selectedGenre) params.with_genres = selectedGenre;
       if (selectedProvider) {
         params.with_watch_providers = selectedProvider;
-        params.watch_region = selectedCountry || "US"; // Required by TMDB when provider is selected
+        params.watch_region = selectedCountry || "US";
       }
       if (selectedCountry) params.with_origin_country = selectedCountry;
 
-      // Fetch movies, series, or both depending on selected type
       if (selectedMediaType === "all") {
         const [movies, tv] = await Promise.all([
-          api.discover("movie", {
-  ...params,
-  primary_release_date_lte: today,
-}),
-api.discover("tv", {
-  ...params,
-  first_air_date_lte: today,
-}),
+          api.discover("movie", { ...params, page: currentPage }),
+          api.discover("tv", { ...params, page: currentPage }),
         ]);
 
-        // Combine and sort by chosen metric
         const combined = [
-  ...(movies.results || [])
-    .filter(item => !item.release_date || item.release_date <= today)
-    .map(item => ({ ...item, media_type: "movie" as const })),
-
-  ...(tv.results || [])
-    .filter(item => !item.first_air_date || item.first_air_date <= today)
-    .map(item => ({ ...item, media_type: "tv" as const }))
-];
+          ...(movies.results || [])
+            .filter(item => !item.release_date || item.release_date <= today)
+            .map(item => ({ ...item, media_type: "movie" as const })),
+          ...(tv.results || [])
+            .filter(item => !item.first_air_date || item.first_air_date <= today)
+            .map(item => ({ ...item, media_type: "tv" as const }))
+        ];
 
         if (selectedSort.includes("vote_average")) {
           combined.sort((a, b) => b.vote_average - a.vote_average);
@@ -360,32 +356,28 @@ api.discover("tv", {
           combined.sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
         }
 
-        return { results: combined };
+        const totalPages = Math.max(movies.total_pages || 1, tv.total_pages || 1);
+        return { results: combined, totalPages: Math.min(totalPages, 500) };
       }
 
-      const discoverParams = { ...params };
+      const discoverParams = { ...params, page: currentPage };
+      if (selectedMediaType === "movie") discoverParams.primary_release_date_lte = today;
+      if (selectedMediaType === "tv") discoverParams.first_air_date_lte = today;
 
-if (selectedMediaType === "movie") {
-  discoverParams.primary_release_date_lte = today;
-}
-
-if (selectedMediaType === "tv") {
-  discoverParams.first_air_date_lte = today;
-}
-
-const res = await api.discover(selectedMediaType as "movie" | "tv", discoverParams);
+      const res = await api.discover(selectedMediaType as "movie" | "tv", discoverParams);
       return {
-  results: (res.results || [])
-    .filter(item =>
-      selectedMediaType === "movie"
-        ? !item.release_date || item.release_date <= today
-        : !item.first_air_date || item.first_air_date <= today
-    )
-    .map(item => ({
-      ...item,
-      media_type: selectedMediaType as "movie" | "tv"
-    }))
-};
+        results: (res.results || [])
+          .filter(item =>
+            selectedMediaType === "movie"
+              ? !item.release_date || item.release_date <= today
+              : !item.first_air_date || item.first_air_date <= today
+          )
+          .map(item => ({
+            ...item,
+            media_type: selectedMediaType as "movie" | "tv"
+          })),
+        totalPages: Math.min(res.total_pages || 1, 500)
+      };
     },
     enabled: type === "discover",
   });
@@ -491,7 +483,7 @@ const res = await api.discover(selectedMediaType as "movie" | "tv", discoverPara
             onReset={handleResetFilters}
           />
         )}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-16">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8 pb-12">
           {unique.map(m => (
             <MovieCard key={m.id} media={{ ...m, media_type: m.media_type || type }} onOpen={openDetail} />
           ))}
@@ -504,6 +496,38 @@ const res = await api.discover(selectedMediaType as "movie" | "tv", discoverPara
             </div>
           )}
         </div>
+
+        {/* Pagination Bar (Discover Only) */}
+        {type === "discover" && unique.length > 0 && (
+          <div className="flex items-center justify-center gap-3 pb-20 pt-4">
+            <button
+              onClick={() => {
+                setPage(Math.max(currentPage - 1, 1));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              disabled={currentPage <= 1}
+              className="inline-flex items-center gap-1.5 p-2 rounded-full border border-border text-sm font-medium hover:bg-surface-2 disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+
+            <div className="px-3 py-2 text-sm font-mono text-muted-foreground">
+              Page <span className="text-foreground font-bold">{currentPage}</span>
+              {discoverQuery.data?.totalPages ? ` of ${discoverQuery.data.totalPages}` : ""}
+            </div>
+
+            <button
+              onClick={() => {
+                setPage(currentPage + 1);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              disabled={discoverQuery.data?.totalPages ? currentPage >= discoverQuery.data.totalPages : false}
+              className="inline-flex items-center gap-1.5 p-2 rounded-full border border-border text-sm font-medium hover:bg-surface-2 disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
+            >
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+        )}
       </div>
       <DetailDrawer media={selected} open={drawerOpen} onOpenChange={setDrawerOpen} onPlay={play} onOpen={(m) => setSelected(m)} />
       {playing && <Player url={playing} onClose={() => setPlaying(null)} />}
