@@ -198,13 +198,11 @@ function Home() {
         <Row label="Trending Now" items={trending.data?.results} onOpen={openDetail} size="lg" />
         <ProviderRow type="movie" onOpen={openDetail} />
         <ProviderRow type="tv" onOpen={openDetail} />
-        <Row label="Top Rated Movies" items={topRatedMovies.data?.results} onOpen={openDetail} />
         <Row label="Now Playing" items={nowPlaying.data?.results} onOpen={openDetail} />
-        <Row label="Top Rated Series" items={topRatedTV.data?.results?.map(m => ({ ...m, media_type: "tv" as const }))} onOpen={openDetail} />
         <Row label="New Releases" items={upcoming.data?.results} onOpen={openDetail} />
       </div>
 
-      <footer className="mt-16 border-t border-border py-12 px-6 md:px-12 bg-background">
+      <footer className="mt-16 border-t border-border/50 py-12 px-6 md:px-12 bg-background">
         <div className="mx-auto max-w-[1600px] flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
           <div className="flex flex-col gap-2">
             <Link to="/" className="inline-flex items-center">

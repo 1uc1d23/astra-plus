@@ -3,7 +3,7 @@ export const TMDB_BASE = "https://api.themoviedb.org/3";
 
 // TMDB keyword IDs that should always be hidden.
 export const BANNED_KEYWORDS = [
-  155477, 256466, 254375, 157094, 354619, 164865, 350552, 378613, 195669, 356759, 190370, 264386, 33998, 445, 7344, 157813, 321739
+  155477, 256466, 254375, 157094, 354619, 164865, 350552, 378613, 195669, 356759, 190370, 264386, 33998, 445, 7344, 157813, 321739, 258533, 158718, 330737
 ];
 export const IMG = (path: string | null | undefined, size: "w200" | "w300" | "w500" | "w780" | "w1280" | "original" = "w500") =>
   path ? `https://image.tmdb.org/t/p/${size}${path}` : "";
@@ -26,6 +26,7 @@ export type Media = {
   runtime?: number;
   number_of_seasons?: number;
   tagline?: string;
+  _ageRating?: string;
   belongs_to_collection?: { id: number; name: string; poster_path: string | null; backdrop_path: string | null };
   images?: { logos: { file_path: string; iso_639_1: string }[] };
   genres?: { id: number; name: string }[];
@@ -33,6 +34,8 @@ export type Media = {
   credits?: { cast: { id: number; name: string; character: string; profile_path: string | null }[] };
   videos?: { results: { key: string; site: string; type: string }[] };
   recommendations?: { results: Media[] };
+  release_dates?: { results: { iso_3166_1: string; release_dates: { certification: string }[] }[] };
+  content_ratings?: { results: { iso_3166_1: string; rating: string }[] };
 };
 
 export type Episode = {
@@ -182,21 +185,11 @@ export const api = {
   tmdb<{ results: Media[] }>(`/discover/movie`, {
     sort_by: "popularity.desc",
   }),
-  topRatedMovies: () =>
-  tmdb<{ results: Media[] }>(`/discover/movie`, {
-    sort_by: "vote_average.desc",
-    vote_count_gte: 500,
-  }),
   nowPlaying: () => tmdb<{ results: Media[] }>(`/movie/now_playing`),
   upcoming: () => tmdb<{ results: Media[] }>(`/movie/upcoming`),
   popularTV: () =>
   tmdb<{ results: Media[] }>(`/discover/tv`, {
     sort_by: "popularity.desc",
-  }),
-  topRatedTV: () =>
-  tmdb<{ results: Media[] }>(`/discover/tv`, {
-    sort_by: "vote_average.desc",
-    vote_count_gte: 200,
   }),
   discoverMovies: (genre?: number) =>
   tmdb<{ results: Media[] }>(
@@ -210,8 +203,17 @@ export const api = {
           sort_by: "popularity.desc",
         }
   ),
-  movie: (id: number) => tmdb<Media>(`/movie/${id}`, { append_to_response: "images,credits,videos,recommendations", include_image_language: "en,null" }),
-  tv: (id: number) => tmdb<Media>(`/tv/${id}`, { append_to_response: "images,credits,videos,recommendations", include_image_language: "en,null" }),
+  movie: async (id: number) => {
+    const data = await tmdb<Media>(`/movie/${id}`, { append_to_response: "images,credits,videos,recommendations,release_dates", include_image_language: "en,null" });
+    const usRelease = data.release_dates?.results?.find(r => r.iso_3166_1 === "US");
+    const cert = usRelease?.release_dates?.find(d => d.certification)?.certification;
+    return { ...data, _ageRating: cert || undefined };
+  },
+  tv: async (id: number) => {
+    const data = await tmdb<Media>(`/tv/${id}`, { append_to_response: "images,credits,videos,recommendations,content_ratings", include_image_language: "en,null" });
+    const usRating = data.content_ratings?.results?.find(r => r.iso_3166_1 === "US");
+    return { ...data, _ageRating: usRating?.rating || undefined };
+  },
   season: (tvId: number, season: number) => tmdb<{ episodes: Episode[]; name: string; overview: string; poster_path: string | null }>(`/tv/${tvId}/season/${season}`),
   search: async (q: string) => {
   const [movies, tv] = await Promise.all([

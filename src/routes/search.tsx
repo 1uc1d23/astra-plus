@@ -59,14 +59,19 @@ function SearchPage() {
 
         {debounced.length > 1 ? (
           <>
-            <div className="text-mono text-[11px] uppercase tracking-widest text-muted-foreground mb-3">
+            <div className="text-mono text-[11px] flex items-center gap-1 uppercase tracking-widest text-muted-foreground mb-3">
+              <SearchIcon size={12} className="inline-block mr-1" />
               {search.isFetching ? "Searching…" : `${results.length} results for "${debounced}"`}
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-16">
               {search.isLoading || search.isFetching
                 ? Array.from({ length: 12 }).map((_, i) => <CardSkeleton key={i} />)
-                : results.map((m) => (
-                    <div key={`${m.media_type}${m.id}`} className="[&>button]:w-full">
+                : results.map((m, index) => (
+                    <div 
+                      key={`${m.media_type}${m.id}`} 
+                      className="[&>button]:w-full opacity-0 animate-scale-in"
+                      style={{ animationDelay: `${index * 40}ms` }}
+                    >
                       <MovieCard media={m} onOpen={openDetail} />
                     </div>
                   ))}
@@ -81,8 +86,12 @@ function SearchPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-16">
               {trending.isLoading
                 ? Array.from({ length: 12 }).map((_, i) => <CardSkeleton key={i} />)
-                : (trending.data?.results ?? []).slice(0, 18).map((m) => (
-                    <div key={m.id} className="[&>button]:w-full">
+                : (trending.data?.results ?? []).slice(0, 18).map((m, index) => (
+                    <div 
+                      key={m.id} 
+                      className="[&>button]:w-full opacity-0 animate-scale-in"
+                      style={{ animationDelay: `${index * 40}ms` }}
+                    >
                       <MovieCard media={m} onOpen={openDetail} />
                     </div>
                   ))}

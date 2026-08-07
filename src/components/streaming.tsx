@@ -1,11 +1,19 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { Play, Info, Star, ArrowLeft, ArrowRight, X, Plus } from "react-feather";
+import { Play, Info, Star, ArrowLeft, ArrowRight, X, Plus, Calendar, Clock, Film } from "react-feather";
 import { Drawer } from "vaul";
 import { IMG, api, embedUrl, englishLogo, isTV, title, year, getContinueWatchingList, type Media, type Episode } from "@/lib/tmdb";
 import { useQuery } from "@tanstack/react-query";
 import * as Select from "@radix-ui/react-select";
 import { Check, ChevronDown, Library } from "lucide-react";
+
+function formatRuntime(minutes?: number) {
+  if (!minutes) return null;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m}m`;
+  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+}
 
 /* ============ Player ============ */
 export function Player({ url, onClose }: { url: string; onClose: () => void }) {
@@ -185,12 +193,13 @@ export function Hero({ items, onOpen, onPlay }: { items: Media[]; onOpen: (m: Me
           ) : (
             <h1 className="mb-6 text-4xl md:text-6xl font-bold tracking-tight">{title(active)}</h1>
           )}
-          <div className="mb-4 flex items-center gap-3 text-mono text-xs text-muted-foreground">
-            <Rating value={active.vote_average} />
-            <span>·</span>
-            <span>{year(active)}</span>
-            {detail?.runtime ? (<><span>·</span><span>{detail.runtime}m</span></>) : null}
-            {detail?.number_of_seasons ? (<><span>·</span><span>{detail.number_of_seasons} Seasons</span></>) : null}
+          <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1 text-xs"><Star size={12} className="fill-accent stroke-accent" /><span className="text-accent">{active.vote_average?.toFixed(1)}</span><span className="text-muted-foreground"> / 10</span></span>
+  <span>·</span>
+  <span className="inline-flex items-center gap-1"><Calendar size={12} />{year(active)}</span>
+  {detail?.runtime ? (<><span>·</span><span className="inline-flex items-center gap-1"><Clock size={12} />{formatRuntime(detail.runtime)}</span></>) : null}
+  {detail?.number_of_seasons ? (<><span>·</span><span>{detail.number_of_seasons} Seasons</span></>) : null}
+  {detail?._ageRating && (<><span>·</span><span className="rounded border border-border bg-surface px-1.5 py-0.5 text-[10px] uppercase">{detail._ageRating}</span></>)}
           </div>
           <p className="mb-8 line-clamp-2 max-w-xl text-sm md:text-base leading-relaxed text-muted-foreground">
             {active.overview}
@@ -305,6 +314,9 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
 
   const [season, setSeason] = useState(initialSeason);
 
+  const [trailerKey, setTrailerKey] = useState<string | null>(null);
+  const trailerRef = useRef<HTMLDivElement>(null);
+
   // --- My List LocalStorage Hook ---
   const [myList, setMyList] = useState<Media[]>(() => {
     try {
@@ -377,7 +389,7 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
       </div>
 
       <div className="mx-auto max-w-6xl px-6 md:px-10 py-6">
-        <div className="flex flex-wrap items-center gap-4 mb-6">
+        <div className="flex flex-wrap items-center gap-3 mb-6">
           <button
             onClick={handlePlayAction}
             className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-accent hover:text-accent-foreground hover:scale-105 cursor-pointer"
@@ -385,9 +397,27 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
             <Play size={16} className="fill-current" />
             {playButtonLabel}
           </button>
+          {(() => {
+            const trailer = m.videos?.results?.find(v => v.site === "YouTube" && (v.type === "Trailer" || v.type === "Teaser"));
+            if (!trailer) return null;
+            return (
+              <button
+                onClick={() => {
+                  setTrailerKey(trailer.key);
+                  setTimeout(() => {
+                    trailerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }, 100);
+                }}
+                className="inline-flex items-center gap-2.5 rounded-full border border-border bg-surface px-6 py-3 text-sm font-medium transition hover:bg-surface-2 hover:scale-105 cursor-pointer"
+              >
+                <Film size={16} />
+                Trailer
+              </button>
+            );
+          })()}
           <button
             onClick={toggleMyList}
-            className={`inline-flex items-center gap-2 rounded-full border border-border px-4 py-3 text-sm transition ${isInList
+            className={`inline-flex items-center gap-2 rounded-full border border-border px-4 py-3 text-sm transition hover:bg-surface-2 hover:scale-105 cursor-pointer ${isInList
                 ? "bg-accent/20 border-accent/40 text-accent hover:bg-accent/30"
                 : "bg-surface hover:bg-surface-2"
               }`}
@@ -398,18 +428,37 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
               </>
             ) : (
               <>
-                <Plus size={16} /> My list
+                <Plus size={16} />
               </>
             )}
           </button>
-          <div className="flex items-center gap-3 text-mono text-xs text-muted-foreground ml-auto">
-            <Rating value={m.vote_average} />
-            <span>·</span>
-            <span>{year(m)}</span>
-            {m.runtime ? (<><span>·</span><span>{m.runtime}m</span></>) : null}
-            {m.number_of_seasons ? (<><span>·</span><span>{m.number_of_seasons} Seasons</span></>) : null}
+          <div className="flex items-center gap-3 text-xs text-muted-foreground ml-auto">
+            <span className="flex items-center gap-1 text-xs"><Star size={12} className="fill-accent stroke-accent" /><span className="text-accent">{m.vote_average?.toFixed(1)}</span><span className="text-muted-foreground"> / 10</span></span>
+  <span>·</span>
+  <span className="inline-flex items-center gap-1"><Calendar size={12} />{year(m)}</span>
+  {m.runtime ? (<><span>·</span><span className="inline-flex items-center gap-1"><Clock size={12} />{formatRuntime(m.runtime)}</span></>) : null}
+  {m.number_of_seasons ? (<><span>·</span><span>{m.number_of_seasons} Seasons</span></>) : null}
+  {m._ageRating && (<><span>·</span><span className="rounded border border-border bg-surface px-1.5 py-0.5 text-[10px] uppercase">{m._ageRating}</span></>)}
           </div>
         </div>
+
+        {trailerKey && (
+          <div ref={trailerRef} className="mb-10 overflow-hidden rounded-2xl border border-border bg-black aspect-video relative">
+            <button
+              onClick={() => setTrailerKey(null)}
+              className="absolute top-4 right-4 z-10 grid h-8 w-8 place-items-center rounded-full bg-black/60 text-white hover:bg-white hover:text-black transition"
+            >
+              ✕
+            </button>
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1`}
+              title="Trailer"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="h-full w-full border-0"
+            />
+          </div>
+        )}
 
         <div className="grid gap-8 md:grid-cols-3">
           <div className="md:col-span-2">
@@ -501,7 +550,7 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
                     </div>
                     <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{ep.overview}</p>
                     <div className="mt-1 text-mono text-[11px] text-muted-foreground">
-                      {ep.air_date} {ep.runtime ? `· ${ep.runtime}m` : ""}
+                      {ep.air_date} {ep.runtime ? `· ${formatRuntime(ep.runtime)}` : ""}
                     </div>
                   </div>
                 </button>
