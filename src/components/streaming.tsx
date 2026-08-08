@@ -5,7 +5,7 @@ import { Drawer } from "vaul";
 import { IMG, api, embedUrl, englishLogo, isTV, title, year, getContinueWatchingList, type Media, type Episode } from "@/lib/tmdb";
 import { useQuery } from "@tanstack/react-query";
 import * as Select from "@radix-ui/react-select";
-import { Check, ChevronDown, Library } from "lucide-react";
+import { Check, ChevronDown, Library, AlarmClock } from "lucide-react";
 
 function formatRuntime(minutes?: number) {
   if (!minutes) return null;
@@ -344,6 +344,12 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
     enabled: tv,
   });
 
+  const { data: seasonVideos } = useQuery({
+    queryKey: ["season-videos", media.id, season],
+    queryFn: () => api.seasonVideos(media.id, season),
+    enabled: tv && !!season,
+  });
+
   // Calculate button label & state
   const releaseDateStr = m.release_date || m.first_air_date;
   const isUnreleased = releaseDateStr ? new Date(releaseDateStr) > new Date() : false;
@@ -463,7 +469,27 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
         <div className="grid gap-8 md:grid-cols-3">
           <div className="md:col-span-2">
             {m.tagline && <div className="text-mono text-xs uppercase tracking-widest text-accent mb-2">{m.tagline}</div>}
-            <p className="text-sm md:text-base leading-relaxed text-foreground/90">{m.overview}</p>
+            <p className="text-sm leading-relaxed text-foreground/90">{m.overview}</p>
+            {tv && m.seasons && (() => {
+              const now = new Date();
+              const upcomingSeason = m.seasons
+                .filter(s => s.season_number > 0 && s.air_date && new Date(s.air_date) > now)
+                .sort((a, b) => new Date(a.air_date).getTime() - new Date(b.air_date).getTime())[0];
+              
+              if (!upcomingSeason) return null;
+              const formattedDate = new Date(upcomingSeason.air_date + "T00:00:00").toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              });
+
+              return (
+                <div className="mt-4 inline-flex items-center gap-2 rounded-xl border border-accent/30 bg-accent/10 px-4 py-2.5 text-xs font-medium text-accent">
+                  <AlarmClock size={16} />
+                  <span>{upcomingSeason.name.toUpperCase()} is coming on {formattedDate}</span>
+                </div>
+              );
+            })()}
             {m.credits?.cast?.length ? (
               <div className="mt-6">
                 <div className="text-mono text-[11px] uppercase tracking-widest text-muted-foreground mb-2">Cast</div>
@@ -491,10 +517,29 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
           <div className="mt-10">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-semibold">Episodes</h3>
-              <Select.Root
-                value={String(season)}
-                onValueChange={(val) => setSeason(Number(val))}
-              >
+              <div className="flex items-center gap-2">
+                {(() => {
+                  const seasonTrailer = seasonVideos?.results?.find(v => v.site === "YouTube" && (v.type === "Trailer" || v.type === "Teaser"));
+                  if (!seasonTrailer) return null;
+                  return (
+                    <button
+                      onClick={() => {
+                        setTrailerKey(seasonTrailer.key);
+                        setTimeout(() => {
+                          trailerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }, 100);
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium transition hover:bg-surface-2 hover:scale-105 cursor-pointer"
+                    >
+                      <Film size={14} />
+                      Trailer
+                    </button>
+                  );
+                })()}
+                <Select.Root
+                  value={String(season)}
+                  onValueChange={(val) => setSeason(Number(val))}
+                >
                 <Select.Trigger className="inline-flex items-center justify-between gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm text-mono focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer min-w-[140px]">
                   <Select.Value />
                   <Select.Icon>
@@ -525,14 +570,18 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
                   </Select.Content>
                 </Select.Portal>
               </Select.Root>
+              </div>
             </div>
             <div className="overflow-hidden rounded-md border bg-muted/20">
               {seasonData?.episodes?.map((ep: Episode) => (
                 <button
                   key={ep.id}
                   onClick={() => onPlay({ ...m, media_type: "tv" }, season, ep.episode_number)}
-                  className="group flex w-full gap-4 border-b border-border/50 p-3 text-left transition hover:bg-surface-2 cursor-pointer"
+                  className="group flex w-full items-center gap-4 border-b border-border/50 p-3 text-left transition hover:bg-surface-2 cursor-pointer"
                 >
+                  <div className="w-10 shrink-0 text-center font-mono text-lg text-muted-foreground">
+                    {ep.episode_number}
+                  </div>
                   <div className="relative w-40 shrink-0 overflow-hidden rounded-lg aspect-video bg-background">
                     {ep.still_path ? (
                       <img src={IMG(ep.still_path, "w300")} alt="" className="h-full w-full object-cover transition group-hover:scale-105" />
@@ -544,14 +593,25 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
                     </div>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-mono text-xs text-muted-foreground">E{ep.episode_number}</span>
-                      <span className="font-medium truncate">{ep.name}</span>
+                    <div className="font-medium truncate">{ep.name}</div>
+                    <div className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      {ep.air_date && (
+                        <span>
+                          {new Date(ep.air_date + "T00:00:00").toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
+                      )}
+                      {ep.air_date && ep.runtime && (
+                        <span className="text-muted-foreground/40">•</span>
+                      )}
+                      {ep.runtime && (
+                        <span>{formatRuntime(ep.runtime)}</span>
+                      )}
                     </div>
                     <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{ep.overview}</p>
-                    <div className="mt-1 text-mono text-[11px] text-muted-foreground">
-                      {ep.air_date} {ep.runtime ? `· ${formatRuntime(ep.runtime)}` : ""}
-                    </div>
                   </div>
                 </button>
               )) ?? Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-24 rounded-xl skeleton" />)}

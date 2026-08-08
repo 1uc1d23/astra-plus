@@ -215,6 +215,7 @@ export const api = {
     return { ...data, _ageRating: usRating?.rating || undefined };
   },
   season: (tvId: number, season: number) => tmdb<{ episodes: Episode[]; name: string; overview: string; poster_path: string | null }>(`/tv/${tvId}/season/${season}`),
+  seasonVideos: (tvId: number, season: number) => tmdb<{ results: { key: string; site: string; type: string }[] }>(`/tv/${tvId}/season/${season}/videos`),
   search: async (q: string) => {
   const [movies, tv] = await Promise.all([
     tmdb<{ results: Media[] }>("/search/movie", {
