@@ -3,7 +3,7 @@ export const TMDB_BASE = "https://api.themoviedb.org/3";
 
 // TMDB keyword IDs that should always be hidden.
 export const BANNED_KEYWORDS = [
-  155477, 256466, 254375, 157094, 354619, 164865, 350552, 378613, 195669, 356759, 190370, 264386, 33998, 445, 7344, 157813, 321739, 258533, 158718, 330737
+  155477, 256466, 254375, 157094, 354619, 164865, 350552, 378613, 195669, 356759, 190370, 264386, 33998, 445, 7344, 157813, 321739, 258533, 158718, 330737, 195997
 ];
 export const IMG = (path: string | null | undefined, size: "w200" | "w300" | "w500" | "w780" | "w1280" | "original" = "w500") =>
   path ? `https://image.tmdb.org/t/p/${size}${path}` : "";
@@ -19,6 +19,7 @@ export type Media = {
   backdrop_path: string | null;
   vote_average: number;
   vote_count: number;
+  popularity?: number;
   release_date?: string;
   first_air_date?: string;
   media_type?: "movie" | "tv";
@@ -191,6 +192,8 @@ export const api = {
   tmdb<{ results: Media[] }>(`/discover/tv`, {
     sort_by: "popularity.desc",
   }),
+  topRatedMovies: () => tmdb<{ results: Media[] }>(`/movie/top_rated`),
+  topRatedTV: () => tmdb<{ results: Media[] }>(`/tv/top_rated`),
   discoverMovies: (genre?: number) =>
   tmdb<{ results: Media[] }>(
     `/discover/movie`,
@@ -217,39 +220,56 @@ export const api = {
   season: (tvId: number, season: number) => tmdb<{ episodes: Episode[]; name: string; overview: string; poster_path: string | null }>(`/tv/${tvId}/season/${season}`),
   seasonVideos: (tvId: number, season: number) => tmdb<{ results: { key: string; site: string; type: string }[] }>(`/tv/${tvId}/season/${season}/videos`),
   search: async (q: string) => {
-  const [movies, tv] = await Promise.all([
-    tmdb<{ results: Media[] }>("/search/movie", {
-      query: q,
-      include_adult: "false",
-    }),
-    tmdb<{ results: Media[] }>("/search/tv", {
-      query: q,
-      include_adult: "false",
-    }),
-  ]);
+    const [movies, tv] = await Promise.all([
+      tmdb<{ results: Media[] }>("/search/movie", {
+        query: q,
+        include_adult: "false",
+      }),
+      tmdb<{ results: Media[] }>("/search/tv", {
+        query: q,
+        include_adult: "false",
+      }),
+    ]);
 
-  const results = [
-    ...movies.results.map((m) => ({ ...m, media_type: "movie" as const })),
-    ...tv.results.map((m) => ({ ...m, media_type: "tv" as const })),
-  ];
+    const results = [
+      ...(movies.results || []).map((m) => ({ ...m, media_type: "movie" as const })),
+      ...(tv.results || []).map((m) => ({ ...m, media_type: "tv" as const })),
+    ];
 
-  return {
-    results: results
-      .filter((item) =>
+    const candidates = results.filter(
+      (item) =>
         item.vote_count >= 20 &&
         item.popularity >= 5 &&
         item.poster_path !== null
-      )
-      .sort((a, b) => {
-        // prioritize popularity first
-        if (b.popularity !== a.popularity) {
-          return b.popularity - a.popularity;
-        }
+    );
 
-        return b.vote_count - a.vote_count;
+    const keywordChecks = await Promise.all(
+      candidates.map(async (item) => {
+        try {
+          const path = item.media_type === "movie" ? `/movie/${item.id}/keywords` : `/tv/${item.id}/keywords`;
+          const data = await tmdb<{ keywords?: { id: number }[]; results?: { id: number }[] }>(path);
+          const keywords = item.media_type === "movie" ? data.keywords : data.results;
+          const hasBanned = keywords?.some((k) => BANNED_KEYWORDS.includes(k.id));
+          return hasBanned ? null : item;
+        } catch {
+          return item;
+        }
+      })
+    );
+
+    const filtered = keywordChecks.filter((item): item is Media => item !== null);
+
+    return {
+      results: filtered.sort((a, b) => {
+        const popA = a?.popularity ?? 0;
+        const popB = b?.popularity ?? 0;
+        if (popB !== popA) {
+          return popB - popA;
+        }
+        return (b?.vote_count ?? 0) - (a?.vote_count ?? 0);
       }),
-  };
-},
+    };
+  },
   genresMovie: () => tmdb<{ genres: { id: number; name: string }[] }>(`/genre/movie/list`),
   // Replace or add to api object in tmdb.ts:
   genresTV: () => tmdb<{ genres: { id: number; name: string }[] }>(`/genre/tv/list`),

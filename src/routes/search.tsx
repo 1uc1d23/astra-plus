@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api, embedUrl, type Media } from "@/lib/tmdb";
-import { DetailDrawer, MovieCard, Nav, PageShell, Player } from "@/components/streaming";
+import { DetailDrawer, MovieCard, Nav, PageShell, Player, useMediaDrawer } from "@/components/streaming";
 import { Search as SearchIcon } from "react-feather";
 
 export const Route = createFileRoute("/search")({
@@ -25,10 +25,8 @@ function SearchPage() {
   });
   const trending = useQuery({ queryKey: ["trending"], queryFn: () => api.trending("day") });
 
-  const [selected, setSelected] = useState<Media | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const { selected, drawerOpen, openDetail, setSelected, setDrawerOpen } = useMediaDrawer();
   const [playing, setPlaying] = useState<string | null>(null);
-  const openDetail = (m: Media) => { setSelected(m); setDrawerOpen(true); };
   const play = (m: Media, s?: number, e?: number) => {
     const type = m.media_type ?? (m.first_air_date ? "tv" : "movie");
     const url = embedUrl({ id: m.id, media_type: type }, s, e);

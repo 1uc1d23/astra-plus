@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { api, getContinueWatchingList, embedUrl, type Media, type ContinueWatchingItem } from "@/lib/tmdb";
-import { DetailDrawer, Hero, Nav, PageShell, Player, Row } from "@/components/streaming";
+import { DetailDrawer, Hero, Nav, PageShell, Player, Row, useMediaDrawer } from "@/components/streaming";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { ChevronDown, Check } from "lucide-react";
 
@@ -143,8 +143,7 @@ function Home() {
   const topRatedTV = useQuery({ queryKey: ["topRatedTV"], queryFn: api.topRatedTV });
   const upcoming = useQuery({ queryKey: ["upcoming"], queryFn: api.upcoming });
 
-  const [selected, setSelected] = useState<Media | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const { selected, drawerOpen, openDetail, setSelected, setDrawerOpen } = useMediaDrawer();
   const [playing, setPlaying] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -152,8 +151,6 @@ function Home() {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
   };
-
-  const openDetail = (m: Media) => { setSelected(m); setDrawerOpen(true); };
 
   const play = (m: Media & { _lastSeason?: number; _lastEpisode?: number }, s?: number, e?: number) => {
     // 1. Check if unreleased

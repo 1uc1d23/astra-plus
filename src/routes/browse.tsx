@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api, embedUrl, type Media } from "@/lib/tmdb";
-import { DetailDrawer, MovieCard, Nav, PageShell, Player } from "@/components/streaming";
+import { DetailDrawer, MovieCard, Nav, PageShell, Player, useMediaDrawer } from "@/components/streaming";
 import { z } from "zod";
 import * as Select from "@radix-ui/react-select";
 import { ChevronDown, Filter, Globe, Shuffle, Check, RotateCcw, ArrowLeft, ArrowRight } from "lucide-react";
@@ -238,6 +238,7 @@ const searchSchema = z.object({
   mediaType: z.enum(["all", "movie", "tv"]).catch("all"),
   country: z.string().optional(),
   page: z.coerce.number().catch(1),
+  media: z.string().optional(),
 }).catch({ type: "movie", sort: "popularity.desc", mediaType: "all", page: 1 });
 
 export const Route = createFileRoute("/browse")({
@@ -264,7 +265,7 @@ function BrowsePage() {
   // Helper to update URL search params on dropdown changes (resets page to 1 on filter change unless specified)
   const updateSearch = (newParams: Record<string, string | number>, resetPage = true) => {
     navigate({
-      search: (prev) => ({
+      search: (prev: Record<string, unknown>) => ({
         ...prev,
         ...newParams,
         ...(resetPage && !('page' in newParams) ? { page: 1 } : {}),
@@ -300,12 +301,15 @@ function BrowsePage() {
     queryFn: () => (type === "tv" ? api.topRatedTV() : api.topRatedMovies()),
   });
 
-  const [selected, setSelected] = useState<Media | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const { selected, drawerOpen, openDetail: rawOpenDetail, setSelected, setDrawerOpen } = useMediaDrawer();
   const [playing, setPlaying] = useState<string | null>(null);
-  const openDetail = (m: Media) => { setSelected({ ...m, media_type: type }); setDrawerOpen(true); };
+  const openDetail = (m: Media) => {
+    const fallback = type === "tv" ? "tv" : "movie";
+    rawOpenDetail(m, fallback);
+  };
   const play = (m: Media, s?: number, e?: number) => {
-    const url = embedUrl({ id: m.id, media_type: type }, s, e);
+    const mediaType = type === "tv" ? "tv" : (m.media_type || (m.first_air_date ? "tv" : "movie"));
+    const url = embedUrl({ id: m.id, media_type: mediaType }, s, e);
     setPlaying(url);
     if (typeof window !== "undefined") window.location.href = url;
   };
