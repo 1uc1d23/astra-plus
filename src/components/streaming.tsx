@@ -60,8 +60,16 @@ export function Rating({ value }: { value: number }) {
 }
 
 /* ============ Card ============ */
-export function MovieCard({ media, onOpen, size = "md" }: { media: Media & { _lastSeason?: number; _lastEpisode?: number }; onOpen: (m: Media) => void; size?: "md" | "lg" }) {
-  const w = "w-40 md:w-44";
+export function MovieCard({
+  media,
+  onOpen,
+  size = "md",
+}: {
+  media: Media & { _lastSeason?: number; _lastEpisode?: number };
+  onOpen: (m: Media) => void;
+  size?: "md" | "lg" | "full";
+}) {
+  const w = size === "full" ? "" : "w-40 md:w-44";
   const tv = isTV(media);
 
   return (
@@ -69,7 +77,7 @@ export function MovieCard({ media, onOpen, size = "md" }: { media: Media & { _la
       onClick={() => onOpen(media)}
       className={`group relative shrink-0 ${w} text-left focus:outline-none`}
     >
-      <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-surface transition duration-500 group-hover:ring-white/40 group-hover:-translate-y-1 group-hover:shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)]">
+      <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-surface transition duration-500 group-hover:-translate-y-1">
         {media.poster_path ? (
           <img
             src={IMG(media.poster_path, "w500")}
@@ -78,25 +86,34 @@ export function MovieCard({ media, onOpen, size = "md" }: { media: Media & { _la
             className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
           />
         ) : (
-          <div className="grid h-full place-items-center text-xs text-muted-foreground">No image</div>
+          <div className="grid h-full place-items-center text-xs text-muted-foreground">
+            No image
+          </div>
         )}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent opacity-70 transition group-hover:opacity-90" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 p-3 opacity-0 translate-y-2 transition duration-500 group-hover:opacity-100 group-hover:translate-y-0">
+
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-90" />
+
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 p-3 opacity-0 transition duration-500 group-hover:translate-y-0 group-hover:opacity-100">
           <div className="flex items-center gap-2">
             <div className="grid h-8 w-8 place-items-center rounded-full bg-white text-black">
-              <Play size={14} className="fill-black ml-0.5" />
+              <Play size={14} className="ml-0.5 fill-black" />
             </div>
             <Rating value={media.vote_average} />
           </div>
         </div>
       </div>
+
       <div className="mt-2 px-0.5">
         <div className="line-clamp-1 text-sm font-medium">{title(media)}</div>
-        <div className="text-mono text-[11px] text-muted-foreground truncate">
+        <div className="text-mono truncate text-[11px] text-muted-foreground">
           {media._lastSeason && media._lastEpisode ? (
-            <span className="text-accent font-semibold">S{media._lastSeason} E{media._lastEpisode}</span>
+            <span className="text-accent font-semibold">
+              S{media._lastSeason} E{media._lastEpisode}
+            </span>
           ) : (
-            <>{year(media) || "—"} · {tv ? "Series" : "Movie"}</>
+            <>
+              {year(media) || "—"} · {tv ? "Series" : "Movie"}
+            </>
           )}
         </div>
       </div>
@@ -105,40 +122,59 @@ export function MovieCard({ media, onOpen, size = "md" }: { media: Media & { _la
 }
 
 /* ============ Row ============ */
-export function Row({ label, items, onOpen, size }: { label: string; items: Media[] | undefined; onOpen: (m: Media) => void; size?: "md" | "lg" }) {
+export function Row({
+  label, items, onOpen, size,
+}: {
+  label: string;
+  items: Media[] | undefined;
+  onOpen: (m: Media) => void;
+  size?: "md" | "lg";
+}) {
   const ref = useRef<HTMLDivElement>(null);
-  const scroll = (dir: 1 | -1) => {
-    const el = ref.current;
-    if (!el) return;
-    el.scrollBy({ left: dir * (el.clientWidth * 0.85), behavior: "smooth" });
-  };
+  const [hovered, setHovered] = useState(false);
+
+  const scroll = (d: 1 | -1) =>
+    ref.current?.scrollBy({
+      left: d * ref.current.clientWidth * 0.85,
+      behavior: "smooth",
+    });
+
+  const btn = (right: boolean) =>
+    `absolute ${right ? "right-2" : "left-2"} top-1/2 z-50 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/70 text-white shadow-xl backdrop-blur-md transition md:grid ${
+      hovered ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+    } hover:bg-white hover:text-black`;
+
   return (
-    <section className="fade-up group/row relative py-6">
-      <div className="mb-3 flex items-end justify-between px-6 md:px-12">
-        <h2 className="text-lg md:text-xl font-semibold tracking-tight">{label}</h2>
-        <div className="text-mono text-[11px] text-muted-foreground uppercase tracking-widest">
+    <section className="fade-up py-6">
+      <div className="mb-3 flex justify-between px-6 md:px-12">
+        <h2 className="text-lg font-semibold md:text-xl">{label}</h2>
+        <span className="text-mono text-[11px] uppercase tracking-widest text-muted-foreground">
           {items?.length ?? "…"} titles
-        </div>
+        </span>
       </div>
-      <div className="relative">
-        <button
-          onClick={() => scroll(-1)}
-          className="absolute left-2 top-1/2 z-10 hidden -translate-y-1/2 md:grid h-10 w-10 place-items-center border border-border rounded-full bg-black/60 backdrop-blur-md opacity-0 transition group-hover/row:opacity-100 hover:bg-white hover:border-white/0 hover:text-black"
-        >
+
+      <div
+        className="relative"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        <button className={btn(false)} onClick={() => scroll(-1)}>
           <ArrowLeft size={18} />
         </button>
-        <button
-          onClick={() => scroll(1)}
-          className="absolute right-2 top-1/2 z-10 hidden -translate-y-1/2 md:grid h-10 w-10 place-items-center border border-border rounded-full bg-black/60 backdrop-blur-md opacity-0 transition group-hover/row:opacity-100 hover:bg-white hover:border-white/0 hover:text-black"
-        >
+
+        <button className={btn(true)} onClick={() => scroll(1)}>
           <ArrowRight size={18} />
         </button>
-        <div ref={ref} className="scroll-row flex gap-3 md:gap-4 overflow-x-auto px-6 md:px-12 py-4 -my-2">
-          {items
-            ? items.map((m) => <MovieCard key={`${m.media_type ?? ""}${m.id}`} media={m} onOpen={onOpen} size={size} />)
-            : Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className={`shrink-0 ${size === "lg" ? "w-52 md:w-60" : "w-40 md:w-44"} aspect-[2/3] rounded-xl skeleton`} />
-            ))}
+
+        <div ref={ref} className="scroll-row flex gap-3 overflow-x-auto px-6 py-4 md:gap-4 md:px-12">
+          {items?.map((m) => (
+            <MovieCard key={`${m.media_type ?? ""}${m.id}`} media={m} onOpen={onOpen} size={size} />
+          )) ?? Array.from({ length: 10 }, (_, i) => (
+            <div
+              key={i}
+              className={`shrink-0 ${size === "lg" ? "w-52 md:w-60" : "w-40 md:w-44"} aspect-[2/3] rounded-xl skeleton`}
+            />
+          ))}
         </div>
       </div>
     </section>

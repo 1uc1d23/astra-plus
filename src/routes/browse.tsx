@@ -489,7 +489,7 @@ function BrowsePage() {
         )}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8 pb-12">
           {unique.map(m => (
-            <MovieCard key={m.id} media={{ ...m, media_type: m.media_type || type }} onOpen={openDetail} />
+            <MovieCard key={m.id} media={{ ...m, media_type: m.media_type || type }} onOpen={openDetail} size={type === "discover" ? "full" : "md"} />
           ))}
           {!unique.length && type !== "mylist" && Array.from({ length: 18 }).map((_, i) => (
             <div key={i} className="aspect-[2/3] rounded-xl skeleton" />
