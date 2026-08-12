@@ -83,7 +83,7 @@ window.MEDIA_INFO = { title: '', subtitle: '', description: '', logo: '' };
     let availableSubtitleTracks = [];
     let captionSettings = {
         languageUrl: '',
-        fontSize: 24,
+        fontSize: 100,
         fontWeight: 500,
         bgOpacity: 0,
         fontFamily: 'Geist',
@@ -102,6 +102,9 @@ window.MEDIA_INFO = { title: '', subtitle: '', description: '', logo: '' };
     const savedCaptionSettings = JSON.parse(localStorage.getItem('captionSettings') || 'null');
     if (savedCaptionSettings) {
         captionSettings = { ...captionSettings, ...savedCaptionSettings, enabled: false };
+        if (!captionSettings.fontSize || captionSettings.fontSize < 50 || captionSettings.fontSize > 200) {
+            captionSettings.fontSize = 100;
+        }
     }
 
     if (captionFontSize) captionFontSize.value = captionSettings.fontSize;
@@ -180,9 +183,9 @@ window.MEDIA_INFO = { title: '', subtitle: '', description: '', logo: '' };
     // ─────────────────────────────────────────
     function getApiUrl() {
         if (window.IS_TV) {
-            return `https://stream-fetcher-worker.muhammadbilal3rd.workers.dev/?url=${encodeURIComponent(`https://streamdata.vaplayer.ru/api.php?tmdb=${window.TMDB_ID}&type=tv&season=${window.TMDB_SEASON}&episode=${window.TMDB_EPISODE}`)}`;
+            return `https://stream-fetcher.vercel.app/v1/tv/${window.TMDB_ID}/seasons/${window.TMDB_SEASON}/episodes/${window.TMDB_EPISODE}`
         }
-        return `https://stream-fetcher-worker.muhammadbilal3rd.workers.dev/?url=${encodeURIComponent(`https://streamdata.vaplayer.ru/api.php?tmdb=${window.TMDB_ID}&type=movie`)}`;
+        return `https://stream-fetcher.vercel.app/v1/movies/${window.TMDB_ID}`;
     }
 
     function getSubtitleApiUrl() {
@@ -372,28 +375,29 @@ window.MEDIA_INFO = { title: '', subtitle: '', description: '', logo: '' };
         if (!response.ok) throw new Error('Failed to fetch streams');
         const resData = await response.json();
 
-        // Extract the stream URLs from the new data structure
+        // 1. Extract sources from resData.sources instead of resData.data.stream_urls
         let streamArray = [];
-        if (resData && resData.data && Array.isArray(resData.data.stream_urls)) {
-            streamArray = resData.data.stream_urls;
+        if (resData && Array.isArray(resData.sources)) {
+            streamArray = resData.sources;
         }
 
-        // Load thumbnails if they exist in the API response
-        if (resData && resData.thumbnails_url) {
-            loadThumbnails(resData.thumbnails_url);
+        // 2. Load thumbnails from the subtitles array if it exists
+        const thumbSub = resData.subtitles?.find(sub => sub.label === 'Thumbnails' || sub.format === 'vtt');
+        if (thumbSub && thumbSub.url) {
+            loadThumbnails(thumbSub.url);
         } else {
             thumbnailCues = [];
         }
 
-        // The new API returns direct .m3u8 URLs, so all items are already HLS streams
-        const hlsStreams = streamArray.filter(url => typeof url === 'string');
+        const hlsStreams = streamArray.filter(item => item && typeof item.url === 'string');
         if (!hlsStreams.length) throw new Error('No HLS streams found');
 
-        // Populate SERVERS dynamically by wrapping each stream URL with the proxy
-        SERVERS = hlsStreams.map((url, idx) => {
+        // 3. Use item.url directly without wrapping it in another proxy
+        const serverNames = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxfort'];
+        SERVERS = hlsStreams.map((item, idx) => {
             return {
-                name: `Server ${idx + 1}`,
-                value: `https://stream-fetcher-worker.muhammadbilal3rd.workers.dev/?url=${encodeURIComponent(url)}`,
+                name: serverNames[idx] || `Server ${idx + 1}`,
+                value: item.url,
                 id: `server_${idx}`
             };
         });
@@ -401,7 +405,7 @@ window.MEDIA_INFO = { title: '', subtitle: '', description: '', logo: '' };
         // Render dynamically populated server dropdown options
         if (serverMenu) {
             serverMenu.innerHTML = '';
-            SERVERS.forEach((srv, idx) => {
+            SERVERS.forEach((srv) => {
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'dyn-item';
@@ -622,22 +626,29 @@ window.MEDIA_INFO = { title: '', subtitle: '', description: '', logo: '' };
     async function initStreams() {
         spinner.style.display = 'block';
         try {
+            console.log("1. Fetching stream data...");
             await fetchStreamsData();
-            currentServer = SERVERS[0]; // Pick the first available HLS by default
+
+            currentServer = SERVERS[0];
             updateServerActive();
 
             window.VIDEO_STREAM_URL = currentServer.value;
+
+            console.log("2. Fetching uniform subtitles...");
             const subtitles = await fetchUniformSubtitles();
             await setAvailableSubtitles(subtitles);
 
             window.isAlpha = false;
+
+            console.log("3. Loading video source...");
             await loadVideoSource();
             buildQualityOptions();
 
+            console.log("4. Success!");
             window.LaunchScreen?.onSuccess(currentServer.name);
             spinner.style.display = 'none';
         } catch (err) {
-            console.error(err);
+            console.error("Error caught:", err);
             window.LaunchScreen?.onAllFailed();
             spinner.style.display = 'none';
             showToast('Failed to load streams');
@@ -962,12 +973,15 @@ window.MEDIA_INFO = { title: '', subtitle: '', description: '', logo: '' };
         return { 400: 'Regular', 500: 'Medium', 600: 'Semi Bold', 700: 'Bold' }[weight] || String(weight);
     }
 
+    const BASE_CAPTION_FONT_SIZE_VH = 3.5;
+
     function applyCaptionStyle() {
-        subtitleOverlay.style.fontSize = `${captionSettings.fontSize}px`;
+        const vhSize = (BASE_CAPTION_FONT_SIZE_VH * (captionSettings.fontSize / 100)).toFixed(2);
+        subtitleOverlay.style.fontSize = `${vhSize}vh`;
         subtitleOverlay.style.fontWeight = String(captionSettings.fontWeight);
         subtitleOverlay.style.setProperty('--caption-bg-opacity', String(captionSettings.bgOpacity / 100));
         subtitleOverlay.style.fontFamily = captionSettings.fontFamily;
-        if (captionFontSizeValue) captionFontSizeValue.textContent = `${captionSettings.fontSize}px`;
+        if (captionFontSizeValue) captionFontSizeValue.textContent = `${captionSettings.fontSize}%`;
         if (captionFontWeightValue) captionFontWeightValue.textContent = formatWeightLabel(captionSettings.fontWeight);
         if (captionBgOpacityValue) captionBgOpacityValue.textContent = `${captionSettings.bgOpacity}%`;
     }
@@ -989,7 +1003,7 @@ window.MEDIA_INFO = { title: '', subtitle: '', description: '', logo: '' };
             btn.classList.toggle('active', btn.dataset.value == captionSettings.fontWeight);
         });
         if (captionFontSize) captionFontSize.value = captionSettings.fontSize;
-        if (captionFontSizeValue) captionFontSizeValue.textContent = captionSettings.fontSize + 'px';
+        if (captionFontSizeValue) captionFontSizeValue.textContent = captionSettings.fontSize + '%';
         if (captionBgOpacity) captionBgOpacity.value = captionSettings.bgOpacity;
         if (captionBgOpacityValue) captionBgOpacityValue.textContent = captionSettings.bgOpacity + '%';
         applyCaptionStyle();

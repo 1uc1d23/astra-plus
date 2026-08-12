@@ -95,7 +95,7 @@ video::-webkit-media-controls {
     transform: translateX(-50%) translateY(0);
     background: transparent;
     color: #fff;
-    font-size: 24px;
+    font-size: 3.5vh;
     font-weight: 500;
     line-height: 1.35;
     padding: 0;
