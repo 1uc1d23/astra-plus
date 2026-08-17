@@ -13,7 +13,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Geist:ital,wght@0,100..900;1,100..900&display=swap"
     rel="stylesheet">
   <link rel="icon" type="image/x-icon" href="/public/favicon.ico" />
-  <link href="https://fonts.googleapis.com/css2?family=Arimo:wght@400..700&family=Geist+Mono:wght@100..900&family=Inter:wght@400..700&family=Montserrat:wght@400..700&family=Oswald:wght@400..700&family=DM+Sans:wght@400..700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Arimo:wght@400..700&family=Geist+Mono:wght@100..900&family=Inter:wght@400..700&family=Montserrat:wght@400..700&family=Oswald:wght@400..700&family=DM+Sans:wght@400..700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <script src="https://unpkg.com/feather-icons"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -139,7 +141,7 @@
                       <button class="s-chip" data-speed="1.5">1.5×</button>
                       <button class="s-chip" data-speed="2">2×</button>
                     </div>
-                    
+
                     <span class="s-label">Resolution</span>
                     <div class="s-chips" id="qualityOptions">
                       <button class="s-chip active" data-quality="-1">Auto</button>
@@ -150,15 +152,41 @@
                     <div class="caption-control" style="padding: 4px 8px 6px; margin-top: 12px;">
                       <label>
                         Server
-                        <span class="setting-readout" id="serverValue">Default</span>
+                        <span class="setting-readout" id="serverValue">Alpha</span>
                       </label>
+
                       <div class="dyn-menu-wrap" id="serverWrap">
                         <button type="button" class="dyn-dropdown" id="serverBtn"
                           onclick="toggleDropdownMenu('serverMenu')">
-                          <span id="serverTitle">Default</span>
-                          <span class="dyn-chevron"><i data-feather="chevron-down"></i></span>
+                          <span id="serverTitle">Alpha</span>
+                          <span class="dyn-chevron">
+                            <i data-feather="chevron-down"></i>
+                          </span>
                         </button>
+
                         <div class="dyn-menu" id="serverMenu"></div>
+                      </div>
+                    </div>
+
+
+                    <!-- Stream selector -->
+                    <div class="caption-control" id="streamControl" style="padding: 4px 8px 6px; margin-top: 12px;">
+                      <label>
+                        Stream
+                        <span class="setting-readout" id="streamValue">Stream 1</span>
+                      </label>
+
+                      <div class="dyn-menu-wrap" id="streamWrap">
+                        <button type="button" class="dyn-dropdown" id="streamBtn"
+                          onclick="toggleDropdownMenu('streamMenu')">
+                          <span id="streamTitle">Stream 1</span>
+
+                          <span class="dyn-chevron">
+                            <i data-feather="chevron-down"></i>
+                          </span>
+                        </button>
+
+                        <div class="dyn-menu" id="streamMenu"></div>
                       </div>
                     </div>
                   </div>
@@ -206,7 +234,8 @@
                             </svg>
                           </button>
                         </div>
-                         <a id="captionSyncReset"><i data-lucide="rotate-ccw" style="width: 12px; height: 12px;"></i> Reset</a>
+                        <a id="captionSyncReset"><i data-lucide="rotate-ccw" style="width: 12px; height: 12px;"></i>
+                          Reset</a>
                       </div>
 
                       <div class="s-divider"></div>
@@ -308,7 +337,8 @@
           </div>
         </div>
       </div>
-      <div id="1.5xSpeed" class="speedToast" role="status" aria-live="polite"><i data-feather="fast-forward" style="margin-right:6px;" fill="currentColor" width="14" height="14"></i> 1.5×</div>
+      <div id="1.5xSpeed" class="speedToast" role="status" aria-live="polite"><i data-feather="fast-forward"
+          style="margin-right:6px;" fill="currentColor" width="14" height="14"></i> 1.5×</div>
       <div id="toast" class="toast" role="status" aria-live="polite"></div>
     </div>
   </div><!-- /#app-wrapper -->

@@ -181,11 +181,20 @@ window.MEDIA_INFO = { title: '', subtitle: '', description: '', logo: '' };
     // ─────────────────────────────────────────
     // API URL HELPERS
     // ─────────────────────────────────────────
-    function getApiUrl() {
+    function getAlphaApiUrl() {
         if (window.IS_TV) {
-            return `https://stream-fetcher.vercel.app/v1/tv/${window.TMDB_ID}/seasons/${window.TMDB_SEASON}/episodes/${window.TMDB_EPISODE}`
+            return `https://lol-xi-woad.vercel.app/tv?id=${window.TMDB_ID}&s=${window.TMDB_SEASON}&e=${window.TMDB_EPISODE}`;
         }
-        return `https://stream-fetcher.vercel.app/v1/movies/${window.TMDB_ID}`;
+
+        return `https://lol-xi-woad.vercel.app/movie?id=${window.TMDB_ID}`;
+    }
+
+    function getBravoApiUrl() {
+        if (window.IS_TV) {
+            return `https://stream-fetcher-worker.muhammadbilal3rd.workers.dev/?url=https%3A%2F%2Fstreamdata.vaplayer.ru%2Fapi.php%3Ftmdb%3D${window.TMDB_ID}%26type%3Dtv%26season%3D${window.TMDB_SEASON}%26episode%3D${window.TMDB_EPISODE}`;
+        }
+
+        return `https://stream-fetcher-worker.muhammadbilal3rd.workers.dev/?url=https%3A%2F%2Fstreamdata.vaplayer.ru%2Fapi.php%3Ftmdb%3D${window.TMDB_ID}%26type%3Dmovie`;
     }
 
     function getSubtitleApiUrl() {
@@ -370,61 +379,633 @@ window.MEDIA_INFO = { title: '', subtitle: '', description: '', logo: '' };
         }
     }
 
-    async function fetchStreamsData() {
-        const response = await fetch(getApiUrl());
-        if (!response.ok) throw new Error('Failed to fetch streams');
-        const resData = await response.json();
+    function updateStreamMenu() {
+        const streamMenu =
+            document.getElementById('streamMenu');
 
-        // 1. Extract sources from resData.sources instead of resData.data.stream_urls
-        let streamArray = [];
-        if (resData && Array.isArray(resData.sources)) {
-            streamArray = resData.sources;
+        const streamTitle =
+            document.getElementById('streamTitle');
+
+        const streamValue =
+            document.getElementById('streamValue');
+
+        if (!streamMenu || !currentServer) {
+            return;
         }
 
-        // 2. Load thumbnails from the subtitles array if it exists
-        const thumbSub = resData.subtitles?.find(sub => sub.label === 'Thumbnails' || sub.format === 'vtt');
-        if (thumbSub && thumbSub.url) {
-            loadThumbnails(thumbSub.url);
-        } else {
-            thumbnailCues = [];
+        streamMenu.innerHTML = '';
+
+        const streams =
+            currentServer.streams || [];
+
+        if (!streams.length) {
+            if (streamTitle) {
+                streamTitle.textContent = 'No streams';
+            }
+
+            if (streamValue) {
+                streamValue.textContent = 'No streams';
+            }
+
+            return;
         }
 
-        const hlsStreams = streamArray.filter(item => item && typeof item.url === 'string');
-        if (!hlsStreams.length) throw new Error('No HLS streams found');
+        streams.forEach((stream, idx) => {
+            const btn =
+                document.createElement('button');
 
-        // 3. Use item.url directly without wrapping it in another proxy
-        const serverNames = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxfort'];
-        SERVERS = hlsStreams.map((item, idx) => {
-            return {
-                name: serverNames[idx] || `Server ${idx + 1}`,
-                value: item.url,
-                id: `server_${idx}`
+            btn.type = 'button';
+            btn.className = 'dyn-item';
+            btn.dataset.stream = idx;
+
+            btn.innerHTML = `
+            ${stream.name}
+            <span class="dyn-check">
+                <i data-feather="check"></i>
+            </span>
+        `;
+
+            btn.onclick = () => {
+                // ==================================================
+                // SELECT STREAM
+                // ==================================================
+
+                currentServer.currentStreamIndex = idx;
+
+                const selectedStream =
+                    currentServer.streams[idx];
+
+                if (!selectedStream) {
+                    console.error(
+                        'Invalid stream index:',
+                        idx
+                    );
+                    return;
+                }
+
+                // ==================================================
+                // UPDATE ACTUAL VIDEO SOURCE
+                // ==================================================
+
+                window.VIDEO_STREAM_URL =
+                    selectedStream.value;
+
+                // ==================================================
+                // UPDATE STREAM DROPDOWN DISPLAY
+                // ==================================================
+
+                if (streamTitle) {
+                    streamTitle.textContent =
+                        selectedStream.name;
+                }
+
+                if (streamValue) {
+                    streamValue.textContent =
+                        selectedStream.name;
+                }
+
+                // ==================================================
+                // UPDATE ACTIVE STATE
+                // ==================================================
+
+                updateStreamActive();
+
+                // ==================================================
+                // CLOSE STREAM MENU
+                // ==================================================
+
+                const wrap =
+                    streamMenu.closest('.dyn-menu-wrap');
+
+                if (wrap) {
+                    wrap.classList.remove('open');
+                }
+
+                console.log(
+                    `Server: ${currentServer.name}`
+                );
+
+                console.log(
+                    `Stream: ${selectedStream.name}`
+                );
+
+                console.log(
+                    `Stream index: ${idx}`
+                );
+
+                console.log(
+                    `Stream URL: ${window.VIDEO_STREAM_URL}`
+                );
+
+                // ==================================================
+                // LOAD SELECTED STREAM
+                // ==================================================
+
+                loadVideoSource();
             };
+
+            streamMenu.appendChild(btn);
         });
 
-        // Render dynamically populated server dropdown options
-        if (serverMenu) {
-            serverMenu.innerHTML = '';
-            SERVERS.forEach((srv) => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'dyn-item';
-                btn.dataset.server = srv.id;
-                btn.innerHTML = `${srv.name} <span class="dyn-check"><i data-feather="check"></i></span>`;
+        // ==================================================
+        // SET DISPLAY TO CURRENTLY SELECTED STREAM
+        // ==================================================
 
-                btn.onclick = () => {
-                    currentServer = srv;
-                    updateServerActive();
+        const selectedIndex =
+            currentServer.currentStreamIndex ?? 0;
 
-                    window.VIDEO_STREAM_URL = currentServer.value;
-                    loadVideoSource();
+        const selectedStream =
+            streams[selectedIndex] || streams[0];
 
-                    const wrap = serverMenu.closest('.dyn-menu-wrap');
-                    if (wrap) wrap.classList.remove('open');
+        // Safety correction if the index is invalid.
+        if (
+            currentServer.currentStreamIndex < 0 ||
+            currentServer.currentStreamIndex >= streams.length
+        ) {
+            currentServer.currentStreamIndex = 0;
+        }
+
+        if (selectedStream) {
+            if (streamTitle) {
+                streamTitle.textContent =
+                    selectedStream.name;
+            }
+
+            if (streamValue) {
+                streamValue.textContent =
+                    selectedStream.name;
+            }
+        }
+
+        updateStreamActive();
+
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    }
+    function updateStreamActive() {
+        const streamMenu =
+            document.getElementById('streamMenu');
+
+        if (!streamMenu || !currentServer) {
+            return;
+        }
+
+        const selectedIndex =
+            currentServer.currentStreamIndex ?? 0;
+
+        const items =
+            streamMenu.querySelectorAll('.dyn-item');
+
+        items.forEach((item, idx) => {
+            item.classList.toggle(
+                'active',
+                idx === selectedIndex
+            );
+        });
+    }
+    function getPreferredStreamIndex(server) {
+        if (!server?.streams?.length) {
+            return -1;
+        }
+
+        const priorityIndex = server.streams.findIndex(stream =>
+            stream?.priority === true ||
+            stream?.isPriority === true ||
+            stream?.default === true ||
+            stream?.isDefault === true ||
+            stream?.preferred === true
+        );
+
+        if (priorityIndex !== -1) {
+            return priorityIndex;
+        }
+
+        return 0;
+    }
+    function updateServerMenu() {
+        const serverMenu =
+            document.getElementById('serverMenu');
+
+        const serverTitle =
+            document.getElementById('serverTitle');
+
+        const serverValue =
+            document.getElementById('serverValue');
+
+        if (!serverMenu) return;
+
+        serverMenu.innerHTML = '';
+
+        SERVERS.forEach((srv) => {
+            const btn =
+                document.createElement('button');
+
+            btn.type = 'button';
+            btn.className = 'dyn-item';
+            btn.dataset.server = srv.id;
+
+            btn.innerHTML = `
+            ${srv.name}
+            <span class="dyn-check">
+                <i data-feather="check"></i>
+            </span>
+        `;
+
+            btn.onclick = () => {
+                if (!srv?.streams?.length) {
+                    console.warn(
+                        `Server ${srv.name} has no streams`
+                    );
+                    return;
+                }
+
+                // ==================================================
+                // SWITCH SERVER
+                // ==================================================
+
+                currentServer = srv;
+
+                // IMPORTANT:
+                // Do NOT keep the previous server's stream index.
+                // Select the new server's preferred/priority stream.
+                const preferredIndex =
+                    getPreferredStreamIndex(currentServer);
+
+                currentServer.currentStreamIndex =
+                    preferredIndex >= 0
+                        ? preferredIndex
+                        : 0;
+
+                const selectedStream =
+                    currentServer.streams[
+                    currentServer.currentStreamIndex
+                    ];
+
+                if (!selectedStream) {
+                    console.error(
+                        'No valid stream for server:',
+                        currentServer.name
+                    );
+                    return;
+                }
+
+                // ==================================================
+                // UPDATE ACTUAL VIDEO SOURCE
+                // ==================================================
+
+                window.VIDEO_STREAM_URL =
+                    selectedStream.value;
+
+                // ==================================================
+                // UPDATE ALPHA STATE
+                // ==================================================
+
+                window.isAlpha =
+                    currentServer.id === 'server_alpha';
+
+                // ==================================================
+                // UPDATE SERVER DROPDOWN DISPLAY
+                // ==================================================
+
+                if (serverTitle) {
+                    serverTitle.textContent =
+                        currentServer.name;
+                }
+
+                if (serverValue) {
+                    serverValue.textContent =
+                        currentServer.name;
+                }
+
+                // ==================================================
+                // REBUILD STREAM DROPDOWN
+                // ==================================================
+
+                updateServerActive();
+                updateStreamMenu();
+                updateStreamActive();
+
+                // ==================================================
+                // CLOSE SERVER MENU
+                // ==================================================
+
+                const wrap =
+                    serverMenu.closest('.dyn-menu-wrap');
+
+                if (wrap) {
+                    wrap.classList.remove('open');
+                }
+
+                console.log(
+                    `Switched to ${currentServer.name}`
+                );
+
+                console.log(
+                    `Selected stream: ${selectedStream.name}`
+                );
+
+                console.log(
+                    `Stream index: ${currentServer.currentStreamIndex}`
+                );
+
+                console.log(
+                    `Stream URL: ${window.VIDEO_STREAM_URL}`
+                );
+
+                // ==================================================
+                // LOAD THE NEW SERVER'S ACTUAL STREAM
+                // ==================================================
+
+                loadVideoSource();
+            };
+
+            serverMenu.appendChild(btn);
+        });
+
+        // ==================================================
+        // IMPORTANT:
+        // Set the dropdown display to the ACTUAL current server.
+        // ==================================================
+
+        if (currentServer) {
+            if (serverTitle) {
+                serverTitle.textContent =
+                    currentServer.name;
+            }
+
+            if (serverValue) {
+                serverValue.textContent =
+                    currentServer.name;
+            }
+        }
+
+        updateServerActive();
+
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    }
+
+    let failoverInProgress = false;
+
+    async function switchToNextStream() {
+        if (failoverInProgress) return;
+
+        failoverInProgress = true;
+
+        try {
+            const serverIndex = SERVERS.indexOf(currentServer);
+
+            if (serverIndex === -1) {
+                return;
+            }
+
+            const currentIndex =
+                currentServer.currentStreamIndex ?? 0;
+
+            // ----------------------------------------------
+            // Try next stream on current server
+            // ----------------------------------------------
+
+            if (
+                currentIndex + 1 <
+                currentServer.streams.length
+            ) {
+                currentServer.currentStreamIndex =
+                    currentIndex + 1;
+
+                const nextStream =
+                    currentServer.streams[
+                    currentServer.currentStreamIndex
+                    ];
+
+                window.VIDEO_STREAM_URL =
+                    nextStream.value;
+
+                updateStreamMenu();
+
+                showToast(`Trying ${nextStream.name}`);
+
+                await loadVideoSource();
+
+                return;
+            }
+
+
+            // ----------------------------------------------
+            // Current server exhausted
+            // Move to next server
+            // ----------------------------------------------
+
+            if (serverIndex + 1 < SERVERS.length) {
+                const nextServer =
+                    SERVERS[serverIndex + 1];
+
+                currentServer = nextServer;
+                currentServer.currentStreamIndex = 0;
+
+                const nextStream =
+                    currentServer.streams[0];
+
+                if (!nextStream) {
+                    return;
+                }
+
+                window.VIDEO_STREAM_URL =
+                    nextStream.value;
+
+                updateServerMenu();
+                updateStreamMenu();
+
+                showToast(`Switching to ${currentServer.name}`);
+
+                await loadVideoSource();
+
+                return;
+            }
+
+
+            // ----------------------------------------------
+            // Everything failed
+            // ----------------------------------------------
+
+            showToast('No more streams available');
+
+            console.error(
+                'All available servers and streams failed.'
+            );
+
+        } finally {
+            failoverInProgress = false;
+        }
+    }
+
+    function getQualityValue(quality) {
+        if (!quality || quality === 'null') {
+            return 0;
+        }
+
+        const match = String(quality).match(/(\d+)p/i);
+
+        return match ? Number(match[1]) : 0;
+    }
+
+    async function fetchStreamsData() {
+        const proxyBase =
+            "https://stream-fetcher-worker.muhammadbilal3rd.workers.dev/?url=";
+
+        // ==================================================
+        // ALPHA
+        // lol-xi-woad - Movish-style response
+        // ==================================================
+
+        let alpha = null;
+
+        try {
+            const alphaResponse = await fetch(getAlphaApiUrl());
+
+            if (!alphaResponse.ok) {
+                throw new Error(`Alpha HTTP ${alphaResponse.status}`);
+            }
+
+            const alphaData = await alphaResponse.json();
+
+            if (alphaData?.streams && Array.isArray(alphaData.streams)) {
+                const alphaStreams = alphaData.streams
+                    .filter(stream =>
+                        stream &&
+                        typeof stream.url === 'string' &&
+                        stream.url.trim() &&
+                        getQualityValue(stream.quality) !== 2160
+                    )
+                    .map(stream => {
+                        const quality =
+                            stream.quality &&
+                                stream.quality !== 'null'
+                                ? String(stream.quality)
+                                : null;
+
+                        return {
+                            url: stream.url,
+                            value: stream.url,
+                            quality: quality,
+                            type: stream.type || 'hls'
+                        };
+                    });
+
+                // Highest quality first
+                alphaStreams.sort((a, b) => {
+                    return getQualityValue(b.quality) -
+                        getQualityValue(a.quality);
+                });
+
+                alphaStreams.forEach((stream, idx) => {
+                    stream.name = stream.quality
+                        ? `Stream ${idx + 1} (${stream.quality})`
+                        : `Stream ${idx + 1}`;
+                });
+
+                if (alphaStreams.length) {
+                    alpha = {
+                        name: 'Alpha',
+                        id: 'server_alpha',
+                        streams: alphaStreams,
+                        currentStreamIndex: 0
+                    };
+                }
+            }
+        } catch (error) {
+            console.warn('Alpha source unavailable:', error);
+        }
+
+
+        // ==================================================
+        // BRAVO
+        // Existing stream-fetcher / Vaplayer response
+        // ==================================================
+
+        let bravo = null;
+
+        try {
+            const bravoResponse = await fetch(getBravoApiUrl());
+
+            if (!bravoResponse.ok) {
+                throw new Error(`Bravo HTTP ${bravoResponse.status}`);
+            }
+
+            const bravoData = await bravoResponse.json();
+
+            let bravoStreamArray = [];
+
+            if (
+                bravoData &&
+                bravoData.data &&
+                Array.isArray(bravoData.data.stream_urls)
+            ) {
+                bravoStreamArray = bravoData.data.stream_urls;
+            }
+
+            const bravoStreams = bravoStreamArray
+                .filter(url =>
+                    typeof url === 'string' &&
+                    url.trim()
+                )
+                .map((url, idx) => ({
+                    name: `Stream ${idx + 1}`,
+                    value: proxyBase + encodeURIComponent(url),
+                    quality: null,
+                    type: 'hls'
+                }));
+
+            if (bravoStreams.length) {
+                bravo = {
+                    name: 'Bravo',
+                    id: 'server_bravo',
+                    streams: bravoStreams,
+                    currentStreamIndex: 0
                 };
-                serverMenu.appendChild(btn);
-            });
-            if (typeof feather !== 'undefined') feather.replace();
+            }
+        } catch (error) {
+            console.warn('Bravo source unavailable:', error);
+        }
+
+
+        // ==================================================
+        // BUILD SERVER LIST
+        // Alpha is ALWAYS prioritized over Bravo
+        // ==================================================
+
+        SERVERS = [];
+
+        if (alpha) {
+            SERVERS.push(alpha);
+        }
+
+        if (bravo) {
+            SERVERS.push(bravo);
+        }
+
+        if (!SERVERS.length) {
+            throw new Error('No playable servers found');
+        }
+
+
+        // ==================================================
+        // START WITH FIRST STREAM OF FIRST SERVER
+        // ==================================================
+
+        currentServer = SERVERS[0];
+        currentServer.currentStreamIndex = 0;
+
+        window.VIDEO_STREAM_URL =
+            currentServer.streams[0].value;
+
+        updateServerMenu();
+        updateStreamMenu();
+
+        if (typeof feather !== 'undefined') {
+            feather.replace();
         }
     }
 
@@ -581,7 +1162,10 @@ window.MEDIA_INFO = { title: '', subtitle: '', description: '', logo: '' };
                 fragLoadingRetryDelay: 500
             });
             const streamUrl = window.VIDEO_STREAM_URL;
-            const isMp4 = streamUrl && streamUrl.includes('.mp4');
+
+            const isMp4 =
+                currentServer?.streams?.[currentServer.currentStreamIndex]?.type === 'mp4' ||
+                /\.mp4(?:$|\?)/i.test(streamUrl);
 
             if (isMp4) {
                 video.preload = "auto";
@@ -607,10 +1191,16 @@ window.MEDIA_INFO = { title: '', subtitle: '', description: '', logo: '' };
                 attemptAutoplay();
             });
             hls.on(Hls.Events.LEVEL_SWITCHED, updateQualityActive);
-            hls.on(Hls.Events.ERROR, (event, data) => {
+            hls.on(Hls.Events.ERROR, async (event, data) => {
+                console.error('HLS error:', data);
+
+                if (data?.type === 'networkError') {
+                    await switchToNextStream();
+                    return;
+                }
+
                 if (data?.fatal) {
-                    showToast('Stream Error');
-                    console.error('HLS error:', data);
+                    await switchToNextStream();
                 }
             });
         } else {
@@ -625,44 +1215,120 @@ window.MEDIA_INFO = { title: '', subtitle: '', description: '', logo: '' };
 
     async function initStreams() {
         spinner.style.display = 'block';
+
         try {
             console.log("1. Fetching stream data...");
             await fetchStreamsData();
 
-            currentServer = SERVERS[0];
+            if (!SERVERS.length) {
+                throw new Error('No playable servers found');
+            }
+
+            // ==================================================
+            // ALWAYS START WITH ALPHA WHEN AVAILABLE
+            // Otherwise fall back to the first available server.
+            // ==================================================
+
+            const alphaServer = SERVERS.find(
+                server => server.id === 'server_alpha'
+            );
+
+            currentServer = alphaServer || SERVERS[0];
+
+            if (!currentServer?.streams?.length) {
+                throw new Error('Selected server has no playable streams');
+            }
+
+            // Select the preferred/priority stream.
+            const preferredIndex =
+                getPreferredStreamIndex(currentServer);
+
+            currentServer.currentStreamIndex =
+                preferredIndex >= 0 ? preferredIndex : 0;
+
+            const selectedStream =
+                currentServer.streams[currentServer.currentStreamIndex];
+
+            if (!selectedStream) {
+                throw new Error('No playable stream found');
+            }
+
+            // ==================================================
+            // SYNCHRONIZE EVERYTHING
+            // ==================================================
+
+            window.VIDEO_STREAM_URL =
+                selectedStream.value;
+
+            updateServerMenu();
             updateServerActive();
 
-            window.VIDEO_STREAM_URL = currentServer.value;
+            updateStreamMenu();
+            updateStreamActive();
+
+            console.log(
+                'Initial server:',
+                currentServer.name
+            );
+
+            console.log(
+                'Initial stream:',
+                selectedStream.name
+            );
+
+            console.log(
+                'Initial URL:',
+                window.VIDEO_STREAM_URL
+            );
 
             console.log("2. Fetching uniform subtitles...");
             const subtitles = await fetchUniformSubtitles();
             await setAvailableSubtitles(subtitles);
 
-            window.isAlpha = false;
+            window.isAlpha =
+                currentServer.id === 'server_alpha';
 
             console.log("3. Loading video source...");
             await loadVideoSource();
+
             buildQualityOptions();
 
             console.log("4. Success!");
-            window.LaunchScreen?.onSuccess(currentServer.name);
+
+            window.LaunchScreen?.onSuccess(
+                currentServer.name
+            );
+
             spinner.style.display = 'none';
+
         } catch (err) {
             console.error("Error caught:", err);
+
             window.LaunchScreen?.onAllFailed();
+
             spinner.style.display = 'none';
+
             showToast('Failed to load streams');
         }
     }
 
     function updateServerActive() {
-        if (serverMenu) {
-            serverMenu.querySelectorAll('.dyn-item').forEach(chip => {
-                chip.classList.toggle('active', chip.dataset.server === currentServer.id);
-            });
+        const serverMenu =
+            document.getElementById('serverMenu');
+
+        if (!serverMenu || !currentServer) {
+            return;
         }
-        if (serverTitle) serverTitle.textContent = currentServer?.name || 'Default';
-        if (serverValue) serverValue.textContent = currentServer?.name || 'Default';
+
+        const items =
+            serverMenu.querySelectorAll('.dyn-item');
+
+        items.forEach(item => {
+            item.classList.toggle(
+                'active',
+                item.dataset.server === currentServer.id
+            );
+        });
     }
 
     // ─────────────────────────────────────────
