@@ -1194,12 +1194,9 @@ window.MEDIA_INFO = { title: '', subtitle: '', description: '', logo: '' };
             hls.on(Hls.Events.ERROR, async (event, data) => {
                 console.error('HLS error:', data);
 
-                if (data?.type === 'networkError') {
-                    await switchToNextStream();
-                    return;
-                }
+                const statusCode = data?.response?.code;
 
-                if (data?.fatal) {
+                if (statusCode === 403 || statusCode === 404) {
                     await switchToNextStream();
                 }
             });
@@ -1805,52 +1802,39 @@ window.MEDIA_INFO = { title: '', subtitle: '', description: '', logo: '' };
 
     async function setAvailableSubtitles(tracks = [], preferredUrl = '') {
         availableSubtitleTracks = tracks;
-        const englishTrack = availableSubtitleTracks.find(t => t.label.toLowerCase() === 'english')
-            || availableSubtitleTracks.find(t => t.label.toLowerCase().startsWith('english'))
-            || availableSubtitleTracks.find(t => t.label.toLowerCase().includes('eng'));
-        const preferredTrack = availableSubtitleTracks.find(t => t.url === preferredUrl) || englishTrack || availableSubtitleTracks[0] || null;
+
+        const englishTrack =
+            availableSubtitleTracks.find(
+                t => t.label?.toLowerCase() === 'english'
+            ) ||
+            availableSubtitleTracks.find(
+                t => t.label?.toLowerCase().startsWith('english')
+            ) ||
+            availableSubtitleTracks.find(
+                t => t.label?.toLowerCase().includes('eng')
+            );
+
+        const preferredTrack =
+            availableSubtitleTracks.find(t => t.url === preferredUrl) ||
+            englishTrack ||
+            availableSubtitleTracks[0] ||
+            null;
+
         captionSettings.languageUrl = preferredTrack?.url || '';
         window.SUBTITLE_VTT_URL = captionSettings.languageUrl || null;
 
-        const fetchPromises = availableSubtitleTracks.map(async (track) => {
-            const cleanLang = track.label.replace(/[^a-zA-Z\s]/g, '').trim().split(' ')[0];
-            if (!cleanLang || window.languageFlags[cleanLang]) return;
-            const targetLangLower = cleanLang.toLowerCase();
-            // Fallback object for core subtitle languages to save API calls, fully decoded dynamically below
-            const baseLanguages = {
-                'arabic': 'SA', 'english': 'GB', 'spanish': 'ES', 'french': 'FR',
-                'chinese': 'CN', 'portuguese': 'PT', 'russian': 'RU', 'japanese': 'JP',
-                'german': 'DE', 'korean': 'KR', 'italian': 'IT', 'danish': 'DK',
-                'dutch': 'NL', 'panjabi': 'IN', 'hausa': 'NG', 'turkish': 'TR', 'polish': 'PL',
-                'persian': 'IR', 'greek': 'GR', 'romanian': 'RO'
-            };
+        // Store subtitle language names only
+        window.subtitleLanguages = availableSubtitleTracks
+            .map(track => {
+                const name = track.label
+                    ?.replace(/[^a-zA-Z\s]/g, '')
+                    .trim()
+                    .split(' ')[0];
 
-            let countryData = null;
-            if (baseLanguages[targetLangLower]) {
-                try {
-                    const res = await fetch(`https://restcountries.com/v3.1/alpha/${baseLanguages[targetLangLower]}`);
-                    if (res.ok) { const d = await res.json(); countryData = d[0]; }
-                } catch { }
-            }
+                return name || null;
+            })
+            .filter(Boolean);
 
-            if (!countryData) {
-                try {
-                    const response = await fetch(`https://restcountries.com/v3.1/lang/${encodeURIComponent(cleanLang)}`);
-                    if (response.ok) { const data = await response.json(); countryData = data[0]; }
-                } catch { }
-            }
-
-            if (countryData && countryData.name?.common && countryData.cca2) {
-                // Formats country name to match URL slug style (e.g., "Saudi Arabia" -> "saudi-arabia")
-                const formattedName = countryData.name.common.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
-                // Decodes the 2-letter country code into Apple's regional indicator hex pair format
-                const unicodePairs = [...countryData.cca2.toUpperCase()].map(char => (char.charCodeAt(0) + 127397).toString(16)).join('-');
-
-                window.languageFlags[cleanLang] = { name: formattedName, unicode: unicodePairs };
-            }
-        });
-
-        await Promise.all(fetchPromises);
         updateCaptionLanguageMenu();
     }
 
