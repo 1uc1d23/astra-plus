@@ -236,7 +236,7 @@ export function Hero({ items, onOpen, onPlay }: { items: Media[]; onOpen: (m: Me
   <span className="inline-flex items-center gap-1"><Calendar size={12} />{year(active)}</span>
   {detail?.runtime ? (<><span>·</span><span className="inline-flex items-center gap-1"><Clock size={12} />{formatRuntime(detail.runtime)}</span></>) : null}
   {detail?.number_of_seasons ? (<><span>·</span><span>{detail.number_of_seasons} Seasons</span></>) : null}
-  {detail?._ageRating && (<><span>·</span><span className="rounded-full border border-border bg-surface px-2 py-0.5 text-[12px] uppercase">{detail._ageRating}</span></>)}
+  {detail?._ageRating && (<><span>·</span><span className="rounded-sm border border-border px-2 py-0.5 text-[12px] uppercase">{detail._ageRating}</span></>)}
           </div>
           <p className="mb-8 line-clamp-2 max-w-xl text-sm md:text-base leading-relaxed text-muted-foreground">
             {active.overview}
@@ -482,7 +482,7 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
   <span className="inline-flex items-center gap-1"><Calendar size={12} />{year(m)}</span>
   {m.runtime ? (<><span>·</span><span className="inline-flex items-center gap-1"><Clock size={12} />{formatRuntime(m.runtime)}</span></>) : null}
   {m.number_of_seasons ? (<><span>·</span><span>{m.number_of_seasons} Seasons</span></>) : null}
-  {m._ageRating && (<><span>·</span><span className="rounded-full border border-border bg-surface px-2 py-0.5 text-[12px] uppercase">{m._ageRating}</span></>)}
+  {m._ageRating && (<><span>·</span><span className="rounded-sm border border-border px-2 py-0.5 text-[12px] uppercase">{m._ageRating}</span></>)}
           </div>
         </div>
 
@@ -800,9 +800,9 @@ export function Nav({ onSearchClick }: { onSearchClick?: () => void }) {
         <div className="flex-1 flex justify-end items-center gap-3">
           <Link
             to="/search"
-            className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-surface px-4 text-sm text-muted-foreground transition hover:bg-surface-2 hover:text-foreground hover:scale-105"
+            className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-surface pl-3 pr-4 text-sm text-muted-foreground transition hover:bg-surface-2 hover:text-foreground hover:scale-105"
           >
-            <SearchIcon /> <span className="hidden sm:inline text-mono text-xs">Search</span>
+            <SearchIcon /> <span className="hidden sm:inline text-xs">Search</span>
           </Link>
         </div>
       </div>

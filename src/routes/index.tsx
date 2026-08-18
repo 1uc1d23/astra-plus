@@ -77,7 +77,7 @@ function ProviderRow({
             >
               {p.provider_id === provider.provider_id && (
                 <span className="absolute left-2.5 flex h-3.5 w-3.5 items-center justify-center">
-                  <Check className="h-4 w-4 text-white/20" />
+                    <Check className="h-4 w-4 text-accent" />
                 </span>
               )}
               {p.provider_name}
