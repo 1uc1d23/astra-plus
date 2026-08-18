@@ -239,7 +239,6 @@ export const api = {
     const candidates = results.filter(
       (item) =>
         item.vote_count >= 20 &&
-        item.popularity >= 5 &&
         item.poster_path !== null
     );
 
