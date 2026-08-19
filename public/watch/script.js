@@ -1,13 +1,12 @@
-const parts = window.location.pathname.split("/").filter(Boolean);
+const params = new URLSearchParams(window.location.search);
 
-window.TMDB_ID = parts[1] || null;
-window.TMDB_SEASON = parts[2] || null;
-window.TMDB_EPISODE = parts[3] || null;
+window.TMDB_ID = params.get("id") || null;
+window.TMDB_SEASON = params.get("s") || null;
+window.TMDB_EPISODE = params.get("e") || null;
 
 window.IS_TV = Boolean(
   window.TMDB_SEASON && window.TMDB_EPISODE
 );
-
 
 window.TMDB_API_KEY = 'ea021b3b0775c8531592713ab727f254';
 window.NETFLIX_MODE = '1';

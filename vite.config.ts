@@ -12,14 +12,14 @@ export default defineConfig({
       name: "watch-route",
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
-          const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
+          const pathname = new URL(
+            req.url ?? "/",
+            "http://localhost",
+          ).pathname;
 
           const isWatchPage =
-  pathname === "/watch" ||
-  pathname === "/watch/" ||
-  /^\/watch\/\d+\/?$/.test(pathname) ||
-  /^\/watch\/\d+\/\d+\/\d+\/?$/.test(pathname);
-
+            pathname === "/watch" ||
+            pathname === "/watch/";
 
           if (!isWatchPage) {
             next();

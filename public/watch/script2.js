@@ -467,12 +467,9 @@
                         display: inline-flex;
                         align-items: center;
                         gap: 7px;
-                        color: #46ca76d2;
                     ">
-                        <span style="width: 15px; height: 15px; display: inline-flex; align-items: center; justify-content: center;">
-                            ${ICONS.check}
-                        </span>
-                        Connected${serverName ? ` to ${serverName}` : ''}
+                        Fetching stream${serverName ? ` from ${serverName}` : ''}
+                        <span class="ls-spinner" style="margin-left: 6px;"></span>
                     </span>
                 `;
 
