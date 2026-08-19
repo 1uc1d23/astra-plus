@@ -5,10 +5,12 @@ import {
   createRootRouteWithContext,
   useRouter,
   useRouterState,
+  useLocation,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
+import { House, Film, Tv, BookSearch, List } from "lucide-react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -158,12 +160,105 @@ function TopLoadingBar() {
   );
 }
 
+function MobileBottomNav() {
+  const location = useLocation();
+  const pathname = location.pathname;
+  const search = (location.search ?? {}) as { type?: string };
+
+  // Don't light up any icon when on Search page
+  const isSearchPage = pathname.startsWith("/search");
+
+  const navItems = [
+    {
+      id: "home",
+      label: "Home",
+      to: "/",
+      search: undefined,
+      icon: House,
+      isActive: !isSearchPage && pathname === "/",
+    },
+    {
+      id: "movies",
+      label: "Movies",
+      to: "/browse",
+      search: { type: "movie" },
+      icon: Film,
+      isActive: !isSearchPage && pathname === "/browse" && search.type === "movie",
+    },
+    {
+      id: "series",
+      label: "Series",
+      to: "/browse",
+      search: { type: "tv" },
+      icon: Tv,
+      isActive: !isSearchPage && pathname === "/browse" && search.type === "tv",
+    },
+    {
+      id: "discover",
+      label: "Discover",
+      to: "/browse",
+      search: { type: "discover" },
+      icon: BookSearch,
+      isActive: !isSearchPage && pathname === "/browse" && search.type === "discover",
+    },
+    {
+      id: "mylist",
+      label: "My List",
+      to: "/browse",
+      search: { type: "mylist" },
+      icon: List,
+      isActive: !isSearchPage && pathname === "/browse" && search.type === "mylist",
+    },
+  ];
+
+  const activeIndex = navItems.findIndex((item) => item.isActive);
+
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-50 block md:hidden border-t border-border/40 bg-background/80 backdrop-blur-xl px-2 py-1 pb-[calc(0.25rem+env(safe-area-inset-bottom))] shadow-lg">
+      <div className="relative flex items-center justify-between max-w-md mx-auto">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.id}
+              to={item.to}
+              search={item.search}
+              aria-label={item.label}
+              className="relative flex flex-1 flex-col items-center justify-center py-2.5 focus:outline-none"
+            >
+              <Icon
+                className={`h-[18px] w-[18px] transition-opacity duration-200 ${
+                  item.isActive ? "opacity-100 text-white" : "opacity-50 text-white hover:opacity-70"
+                }`}
+              />
+            </Link>
+          );
+        })}
+
+        {/* Animated bounce underline indicator */}
+        {activeIndex !== -1 && (
+          <div
+            className="absolute bottom-1 h-[2px] w-5 rounded-full bg-accent transition-all duration-300"
+            style={{
+              left: `calc(${activeIndex * 20}% + 10% - 10px)`,
+              transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+            }}
+          />
+        )}
+      </div>
+    </nav>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
       <TopLoadingBar />
-      <Outlet />
+      <div className="pb-16 md:pb-0">
+        <Outlet />
+      </div>
+      <MobileBottomNav />
     </QueryClientProvider>
   );
 }

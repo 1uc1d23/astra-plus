@@ -567,7 +567,7 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
                           trailerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
                         }, 100);
                       }}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium transition hover:bg-surface-2 hover:scale-105 cursor-pointer"
+                      className="inline-flex items-center gap-1.5 opacity-50 px-2 py-2 text-sm font-medium transition hover:opacity-100 cursor-pointer"
                     >
                       <Film size={14} />
                       Trailer
@@ -581,7 +581,7 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
                     setShowAllEpisodes(false);
                   }}
                 >
-                <Select.Trigger className="inline-flex items-center justify-between gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm text-mono focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer min-w-[140px]">
+                <Select.Trigger className="inline-flex items-center justify-between gap-2 rounded-full border border-border bg-surface px-4 py-2 text-xs md:text-sm text-mono focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer min-w-[140px]">
                   <Select.Value />
                   <Select.Icon>
                     <ChevronDown className="h-4 w-4 opacity-50" />
@@ -638,7 +638,7 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
                         <div className="w-10 shrink-0 text-center font-mono text-lg text-muted-foreground">
                           {ep.episode_number}
                         </div>
-                        <div className="relative w-40 shrink-0 overflow-hidden rounded-lg aspect-video bg-background">
+                        <div className="relative w-40 max-w-[30%] shrink-0 overflow-hidden rounded-lg aspect-video bg-background">
                           {ep.still_path ? (
                             <img src={IMG(ep.still_path, "w300")} alt="" className="h-full w-full object-cover transition group-hover:scale-105" />
                           ) : null}
@@ -649,8 +649,8 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
                           </div>
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="font-medium truncate">{ep.name}</div>
-                          <div className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                          <div className="font-medium truncate text-[13px] md:text-[16px]">{ep.name}</div>
+                          <div className="hidden md:flex mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
                             {ep.air_date && (
                               <span>
                                 {new Date(ep.air_date + "T00:00:00").toLocaleDateString("en-US", {
@@ -667,7 +667,7 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
                               <span>{formatRuntime(ep.runtime)}</span>
                             )}
                           </div>
-                          <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{ep.overview}</p>
+                          <p className="md:mt-1 line-clamp-2 text-xs text-muted-foreground">{ep.overview}</p>
                         </div>
                       </button>
                     ))}

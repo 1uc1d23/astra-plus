@@ -283,8 +283,8 @@ export const api = {
 };
 export const embedUrl = (m: { id: number; media_type?: string }, season?: number, episode?: number) => {
   const isTV = m.media_type === "tv" || season !== undefined;
-  if (isTV) return `/watch/index.html?id=${m.id}&s=${season ?? 1}&e=${episode ?? 1}`;
-  return `/watch/index.html?id=${m.id}`;
+  if (isTV) return `/watch/${m.id}/${season ?? 1}/${episode ?? 1}`;
+  return `/watch/${m.id}`;
 };
 export const title = (m: Media) => m.title || m.name || m.original_title || m.original_name || "Untitled";
 export const year = (m: Media) => (m.release_date || m.first_air_date || "").slice(0, 4);

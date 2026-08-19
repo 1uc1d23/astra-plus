@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/watch",
+      "destination": "/watch/index.html"
+    },
+    {
+      "source": "/watch/",
+      "destination": "/watch/index.html"
+    }
+  ]
+}
