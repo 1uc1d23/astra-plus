@@ -6,8 +6,36 @@ import { IMG, api, embedUrl, englishLogo, isTV, title, year, getContinueWatching
 import { useQuery } from "@tanstack/react-query";
 export { useMediaDrawer, parseMediaParam, formatMediaParam, updateMediaUrlParam } from "@/hooks/use-media-drawer";
 import * as Select from "@radix-ui/react-select";
-import { Check, ChevronDown, ChevronUp, Library, AlarmClock } from "lucide-react";
+import * as Tooltip from "@radix-ui/react-tooltip";
+import { Check, ChevronDown, ChevronUp, Library, AlarmClock, LayoutGrid, List } from "lucide-react";
 
+function TooltipButton({
+  tooltip,
+  children,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  tooltip: string;
+}) {
+  return (
+    <Tooltip.Root>
+      <Tooltip.Trigger asChild>
+        <button {...props}>{children}</button>
+      </Tooltip.Trigger>
+
+      <Tooltip.Portal>
+        <Tooltip.Content
+          forceMount
+          side="top"
+          sideOffset={6}
+          className="tooltip-content z-[200] rounded-md bg-foreground px-3 py-1.5 text-xs font-medium text-background shadow-md"
+        >
+          {tooltip}
+          <Tooltip.Arrow className="fill-foreground" />
+        </Tooltip.Content>
+      </Tooltip.Portal>
+    </Tooltip.Root>
+  );
+}
 function formatRuntime(minutes?: number) {
   if (!minutes) return null;
   const h = Math.floor(minutes / 60);
@@ -140,8 +168,7 @@ export function Row({
     });
 
   const btn = (right: boolean) =>
-    `absolute ${right ? "right-2" : "left-2"} top-1/2 z-50 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/70 text-white shadow-xl backdrop-blur-md transition md:grid ${
-      hovered ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+    `absolute ${right ? "right-2" : "left-2"} top-1/2 z-50 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/70 text-white shadow-xl backdrop-blur-md transition md:grid ${hovered ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
     } hover:bg-white hover:text-black`;
 
   return (
@@ -232,11 +259,11 @@ export function Hero({ items, onOpen, onPlay }: { items: Media[]; onOpen: (m: Me
           )}
           <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1 text-xs"><Star size={12} className="fill-accent stroke-accent" /><span className="text-accent">{active.vote_average?.toFixed(1)}</span><span className="text-muted-foreground"> / 10</span></span>
-  <span>·</span>
-  <span className="inline-flex items-center gap-1"><Calendar size={12} />{year(active)}</span>
-  {detail?.runtime ? (<><span>·</span><span className="inline-flex items-center gap-1"><Clock size={12} />{formatRuntime(detail.runtime)}</span></>) : null}
-  {detail?.number_of_seasons ? (<><span>·</span><span>{detail.number_of_seasons} Seasons</span></>) : null}
-  {detail?._ageRating && (<><span>·</span><span className="rounded-sm border border-border px-2 py-0.5 text-[12px] uppercase">{detail._ageRating}</span></>)}
+            <span>·</span>
+            <span className="inline-flex items-center gap-1"><Calendar size={12} />{year(active)}</span>
+            {detail?.runtime ? (<><span>·</span><span className="inline-flex items-center gap-1"><Clock size={12} />{formatRuntime(detail.runtime)}</span></>) : null}
+            {detail?.number_of_seasons ? (<><span>·</span><span>{detail.number_of_seasons} Seasons</span></>) : null}
+            {detail?._ageRating && (<><span>·</span><span className="rounded-sm border border-border px-2 py-0.5 text-[12px] uppercase">{detail._ageRating}</span></>)}
           </div>
           <p className="mb-8 line-clamp-2 max-w-xl text-sm md:text-base leading-relaxed text-muted-foreground">
             {active.overview}
@@ -244,14 +271,14 @@ export function Hero({ items, onOpen, onPlay }: { items: Media[]; onOpen: (m: Me
           <div className="flex flex-wrap gap-3">
             <button
               onClick={() => onPlay(active)}
-              className="group inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-accent hover:text-accent-foreground hover:scale-105"
+              className="group inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-accent hover:text-accent-foreground hover:scale-105"
             >
               <Play size={16} className="fill-current" />
               Play
             </button>
             <button
               onClick={() => onOpen(active)}
-              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-md px-6 py-3 text-sm font-medium transition hover:bg-white/20 hover:scale-105"
+              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-md px-5 py-3 text-sm font-medium transition hover:bg-white/20 hover:scale-105"
             >
               <Info size={16} />
               More info
@@ -314,21 +341,97 @@ export function DetailDrawer({
   onOpen: (m: Media) => void;
 }) {
   return (<Drawer.Root open={open} onOpenChange={onOpenChange} shouldScaleBackground>
-      <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 z-40 bg-black/70" />
-        <Drawer.Content className="fixed bottom-0 left-0 right-0 overflow-hidden z-50 mx-auto mt-24 flex h-[90vh] max-w-[1000px] w-full flex-col rounded-t-3xl bg-background outline-none">
-          <Drawer.Title className="sr-only">{media ? title(media) : "Details"}</Drawer.Title>
-          <Drawer.Description className="sr-only">{media?.overview ?? ""}</Drawer.Description>
+    <Drawer.Portal>
+      <Drawer.Overlay className="fixed inset-0 z-40 bg-black/70" />
+      <Drawer.Content className="fixed bottom-0 left-0 right-0 overflow-hidden z-50 mx-auto mt-24 flex h-[90vh] max-w-[1000px] w-full flex-col rounded-t-3xl bg-background outline-none">
+        <Drawer.Title className="sr-only">{media ? title(media) : "Details"}</Drawer.Title>
+        <Drawer.Description className="sr-only">{media?.overview ?? ""}</Drawer.Description>
 
-          {/* Expanded draggable hit-area covering the full width */}
-          <div className="absolute top-0 left-0 right-0 z-50 flex h-8 w-full items-center justify-center">
-            <div className="h-1.5 w-12 shrink-0 rounded-full bg-white/30" />
+        {/* Expanded draggable hit-area covering the full width */}
+        <div className="absolute top-0 left-0 right-0 z-50 flex h-8 w-full items-center justify-center">
+          <div className="h-1.5 w-12 shrink-0 rounded-full bg-white/30" />
+        </div>
+
+        <DrawerScrollContainer media={media} onPlay={onPlay} onOpen={onOpen} />
+      </Drawer.Content>
+    </Drawer.Portal>
+  </Drawer.Root>
+  );
+}
+
+function CarouselEpisodeCard({ ep, media, season, onPlay }: { ep: Episode; media: Media; season: number; onPlay: (m: Media, s?: number, e?: number) => void }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div
+      className="group flex flex-col justify-between overflow-hidden min-w-0 shrink-0 border border-border/50 grow-0 basis-[180px] sm:basis-[215px] md:basis-[215px] md:h-[260px] rounded-2xl bg-muted/20 relative select-none hover:bg-muted/50 transition-colors cursor-pointer"
+    >
+      <div
+        onClick={() =>
+          onPlay({ ...media, media_type: "tv" }, season, ep.episode_number)
+        }
+      >
+        {!expanded && (
+          <div className="relative w-full aspect-video overflow-hidden bg-background cursor-pointer">
+            {ep.still_path ? (
+              <img
+                src={IMG(ep.still_path, "w300")}
+                alt=""
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+            ) : (
+              <div className="grid h-full place-items-center text-xs text-muted-foreground">
+                No image
+              </div>
+            )}
           </div>
+        )}
 
-          <DrawerScrollContainer media={media} onPlay={onPlay} onOpen={onOpen} />
-        </Drawer.Content>
-      </Drawer.Portal>
-    </Drawer.Root>
+        <div className="flex items-center uppercase px-2 sm:px-2.5 gap-1.5 text-[10px] text-muted-foreground/60 mt-2 sm:mt-2.5 mb-0.5">
+          <span>Episode {ep.episode_number}</span>
+          {ep.air_date && (
+            <>
+              <span className="text-muted-foreground/50">•</span>
+              <span>
+                {new Date(ep.air_date + "T00:00:00").toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </span>
+            </>
+          )}
+        </div>
+
+        {!expanded && (
+          <div className="font-semibold text-xs sm:text-sm px-2 sm:px-2.5 line-clamp-1 text-foreground mb-1">
+            {ep.name}
+          </div>
+        )}
+
+        <p
+          className={`text-[10px] sm:text-[11px] leading-relaxed text-muted-foreground/90 px-2 sm:px-2.5 ${expanded
+              ? "line-clamp-[8] overflow-y-auto max-h-[160px]"
+              : "line-clamp-2"
+            }`}
+        >
+          {ep.overview || "No description available."}
+        </p>
+      </div>
+
+      <div className="flex items-center justify-between py-3 text-xs px-2 sm:px-2.5">
+        <span className="text-[10px] sm:text-[11px] text-muted-foreground/50">
+          {formatRuntime(ep.runtime) || "—"}
+        </span>
+
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="text-[10px] text-primary/50 hover:text-primary transition-colors"
+        >
+          {expanded ? "Show Less" : "More"}
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -351,6 +454,41 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
 
   const [season, setSeason] = useState(initialSeason);
   const [showAllEpisodes, setShowAllEpisodes] = useState(false);
+  const [episodeViewMode, setEpisodeViewMode] = useState<"carousel" | "list">("carousel");
+  const episodeScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScroll = () => {
+    if (!episodeScrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = episodeScrollRef.current;
+    setCanScrollLeft(scrollLeft > 0);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
+  };
+
+
+  const { data: seasonData } = useQuery({
+    queryKey: ["season", media.id, season],
+    queryFn: () => api.season(media.id, season),
+    enabled: tv,
+  });
+
+  useEffect(() => {
+    const el = episodeScrollRef.current;
+
+    if (!el) return;
+
+    el.scrollTo({
+      left: 0,
+      behavior: "auto",
+    });
+
+    // Wait for the new season's episodes to render,
+    // then recalculate the arrow visibility.
+    requestAnimationFrame(() => {
+      checkScroll();
+    });
+  }, [season, episodeViewMode, seasonData]);
 
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const trailerRef = useRef<HTMLDivElement>(null);
@@ -376,12 +514,6 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
     localStorage.setItem("astra_my_list", JSON.stringify(updated));
   };
 
-  const { data: seasonData } = useQuery({
-    queryKey: ["season", media.id, season],
-    queryFn: () => api.season(media.id, season),
-    enabled: tv,
-  });
-
   const { data: seasonVideos } = useQuery({
     queryKey: ["season-videos", media.id, season],
     queryFn: () => api.seasonVideos(media.id, season),
@@ -392,7 +524,7 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
   const releaseDateStr = m.release_date || m.first_air_date;
   const isUnreleased = releaseDateStr ? new Date(releaseDateStr) > new Date() : false;
 
-  let playButtonLabel = "Play";
+  let playButtonLabel = tv ? `Play S${initialSeason} E${initialEpisode}` : "Play";
   if (isUnreleased) {
     playButtonLabel = "Coming Soon";
   } else if (tv && (m._lastSeason || savedProgress?.season)) {
@@ -436,7 +568,7 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
         <div className="flex flex-wrap items-center gap-3 mb-6">
           <button
             onClick={handlePlayAction}
-            className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-accent hover:text-accent-foreground hover:scale-105 cursor-pointer"
+            className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-accent hover:text-accent-foreground hover:scale-105 cursor-pointer"
           >
             <Play size={16} className="fill-current" />
             {playButtonLabel}
@@ -452,18 +584,19 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
                     trailerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
                   }, 100);
                 }}
-                className="inline-flex items-center gap-2.5 rounded-full border border-border bg-surface px-6 py-3 text-sm font-medium transition hover:bg-surface-2 hover:scale-105 cursor-pointer"
+                className="inline-flex items-center gap-2.5 rounded-full border border-border bg-surface px-5 py-3 text-sm font-medium transition hover:bg-surface-2 hover:scale-105 cursor-pointer"
               >
                 <Film size={16} />
                 Trailer
               </button>
             );
           })()}
-          <button
+          <TooltipButton
+            tooltip={isInList ? "Remove from list" : "Add to list"}
             onClick={toggleMyList}
-            className={`inline-flex items-center gap-2 rounded-full border border-border px-4 py-3 text-sm transition hover:bg-surface-2 hover:scale-105 cursor-pointer ${isInList
-                ? "bg-accent/20 border-accent/40 text-accent hover:bg-accent/30"
-                : "bg-surface hover:bg-surface-2"
+            className={`inline-flex items-center gap-2 rounded-full border border-border px-4 py-3 min-h-[45px] text-sm transition hover:bg-surface-2 hover:scale-105 cursor-pointer ${isInList
+              ? "bg-accent/20 border-accent/40 text-accent hover:bg-accent/30"
+              : "bg-surface hover:bg-surface-2"
               }`}
           >
             {isInList ? (
@@ -475,14 +608,14 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
                 <Plus size={16} />
               </>
             )}
-          </button>
+          </TooltipButton>
           <div className="flex items-center gap-3 text-xs text-muted-foreground ml-auto">
             <span className="flex items-center gap-1 text-xs"><Star size={12} className="fill-accent stroke-accent" /><span className="text-accent">{m.vote_average?.toFixed(1)}</span><span className="text-muted-foreground"> / 10</span></span>
-  <span>·</span>
-  <span className="inline-flex items-center gap-1"><Calendar size={12} />{year(m)}</span>
-  {m.runtime ? (<><span>·</span><span className="inline-flex items-center gap-1"><Clock size={12} />{formatRuntime(m.runtime)}</span></>) : null}
-  {m.number_of_seasons ? (<><span>·</span><span>{m.number_of_seasons} Seasons</span></>) : null}
-  {m._ageRating && (<><span>·</span><span className="rounded-sm border border-border px-2 py-0.5 text-[12px] uppercase">{m._ageRating}</span></>)}
+            <span>·</span>
+            <span className="inline-flex items-center gap-1"><Calendar size={12} />{year(m)}</span>
+            {m.runtime ? (<><span>·</span><span className="inline-flex items-center gap-1"><Clock size={12} />{formatRuntime(m.runtime)}</span></>) : null}
+            {m.number_of_seasons ? (<><span>·</span><span>{m.number_of_seasons} Seasons</span></>) : null}
+            {m._ageRating && (<><span>·</span><span className="rounded-sm border border-border px-2 py-0.5 text-[12px] uppercase">{m._ageRating}</span></>)}
           </div>
         </div>
 
@@ -513,7 +646,7 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
               const upcomingSeason = m.seasons
                 .filter(s => s.season_number > 0 && s.air_date && new Date(s.air_date) > now)
                 .sort((a, b) => new Date(a.air_date).getTime() - new Date(b.air_date).getTime())[0];
-              
+
               if (!upcomingSeason) return null;
               const formattedDate = new Date(upcomingSeason.air_date + "T00:00:00").toLocaleDateString("en-US", {
                 month: "long",
@@ -556,24 +689,14 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-semibold">Episodes</h3>
               <div className="flex items-center gap-2">
-                {(() => {
-                  const seasonTrailer = seasonVideos?.results?.find(v => v.site === "YouTube" && (v.type === "Trailer" || v.type === "Teaser"));
-                  if (!seasonTrailer) return null;
-                  return (
-                    <button
-                      onClick={() => {
-                        setTrailerKey(seasonTrailer.key);
-                        setTimeout(() => {
-                          trailerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                        }, 100);
-                      }}
-                      className="inline-flex items-center gap-1.5 opacity-50 px-2 py-2 text-sm font-medium transition hover:opacity-100 cursor-pointer"
-                    >
-                      <Film size={14} />
-                      Trailer
-                    </button>
-                  );
-                })()}
+                <TooltipButton
+                  tooltip={episodeViewMode === "carousel" ? "List view" : "Carousel view"}
+                  onClick={() => setEpisodeViewMode(episodeViewMode === "carousel" ? "list" : "carousel")}
+                  className="inline-flex size-8 shrink-0 cursor-pointer rounded-lg items-center justify-center transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-40 text-muted-foreground/60 hover:bg-white/10 hover:text-white"
+                >
+                  {episodeViewMode === "carousel" ? <List size={16} /> : <LayoutGrid size={16} />}
+                </TooltipButton>
+
                 <Select.Root
                   value={String(season)}
                   onValueChange={(val) => {
@@ -581,44 +704,76 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
                     setShowAllEpisodes(false);
                   }}
                 >
-                <Select.Trigger className="inline-flex items-center justify-between gap-2 rounded-full border border-border bg-surface px-4 py-2 text-xs md:text-sm text-mono focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer min-w-[140px]">
-                  <Select.Value />
-                  <Select.Icon>
-                    <ChevronDown className="h-4 w-4 opacity-50" />
-                  </Select.Icon>
-                </Select.Trigger>
+                  <Select.Trigger className="inline-flex items-center justify-between gap-2 rounded-full border border-border bg-surface px-4 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer min-w-[140px]">
+                    <Select.Value />
+                    <Select.Icon>
+                      <ChevronDown className="h-4 w-4 opacity-50" />
+                    </Select.Icon>
+                  </Select.Trigger>
 
-                <Select.Portal>
-                  <Select.Content
-                    className="z-[100] min-w-[8rem] overflow-hidden rounded-xl border border-border bg-surface text-foreground shadow-2xl p-1 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
-                  >
-                    <Select.Viewport>
-                      {m.seasons.filter(s => s.season_number > 0).map((s) => (
-                        <Select.Item
-                          key={s.id}
-                          value={String(s.season_number)}
-                          className="relative flex cursor-pointer select-none items-center rounded-lg py-2 pl-8 pr-4 text-sm outline-none hover:bg-surface-2 focus:bg-surface-2 focus:text-accent cursor-pointer transition-colors"
-                        >
-                          <span className="absolute left-2.5 flex h-3.5 w-3.5 items-center justify-center">
-                            <Select.ItemIndicator>
-                              <Check className="h-4 w-4 text-accent" />
-                            </Select.ItemIndicator>
-                          </span>
-                          <Select.ItemText>{s.name}</Select.ItemText>
-                        </Select.Item>
-                      ))}
-                    </Select.Viewport>
-                  </Select.Content>
-                </Select.Portal>
-              </Select.Root>
+                  <Select.Portal>
+                    <Select.Content
+                      className="z-[100] min-w-[8rem] overflow-hidden rounded-xl border border-border bg-surface text-foreground shadow-2xl p-1 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
+                    >
+                      <Select.Viewport>
+                        {m.seasons.filter(s => s.season_number > 0).map((s) => (
+                          <Select.Item
+                            key={s.id}
+                            value={String(s.season_number)}
+                            className="relative flex cursor-pointer select-none items-center rounded-lg py-2 pl-8 pr-4 text-sm outline-none hover:bg-surface-2 focus:bg-surface-2 focus:text-accent cursor-pointer transition-colors"
+                          >
+                            <span className="absolute left-2.5 flex h-3.5 w-3.5 items-center justify-center">
+                              <Select.ItemIndicator>
+                                <Check className="h-4 w-4 text-accent" />
+                              </Select.ItemIndicator>
+                            </span>
+                            <Select.ItemText>{s.name}</Select.ItemText>
+                          </Select.Item>
+                        ))}
+                      </Select.Viewport>
+                    </Select.Content>
+                  </Select.Portal>
+                </Select.Root>
               </div>
             </div>
             {(() => {
               const episodes = seasonData?.episodes;
               if (!episodes) {
                 return (
-                  <div className="overflow-hidden rounded-md border bg-muted/20">
-                    {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-24 rounded-xl skeleton" />)}
+                  <div className="flex min-h-24 items-center justify-center rounded-md border bg-muted/20">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted/20" />
+                  </div>
+                );
+              }
+
+              if (episodeViewMode === "carousel") {
+                return (
+                  <div className="relative group/carousel">
+                    {canScrollLeft && (
+                      <button
+                        onClick={() => episodeScrollRef.current?.scrollBy({ left: -900, behavior: "smooth" })}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 z-20 grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-black/70 text-white shadow-xl backdrop-blur-md transition hover:bg-white hover:text-black"
+                      >
+                        <ArrowLeft size={16} />
+                      </button>
+                    )}
+                    {canScrollRight && (
+                      <button
+                        onClick={() => episodeScrollRef.current?.scrollBy({ left: 900, behavior: "smooth" })}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 z-20 grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-black/70 text-white shadow-xl backdrop-blur-md transition hover:bg-white hover:text-black"
+                      >
+                        <ArrowRight size={16} />
+                      </button>
+                    )}
+                    <div
+                      ref={episodeScrollRef}
+                      onScroll={checkScroll}
+                      className="flex gap-4 overflow-x-auto pb-4 pt-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                    >
+                      {episodes.map((ep: Episode) => (
+                        <CarouselEpisodeCard key={ep.id} ep={ep} media={m} season={season} onPlay={onPlay} />
+                      ))}
+                    </div>
                   </div>
                 );
               }
@@ -635,21 +790,16 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
                         onClick={() => onPlay({ ...m, media_type: "tv" }, season, ep.episode_number)}
                         className="group flex w-full items-center gap-4 border-b border-border/50 p-3 text-left transition hover:bg-surface-2 cursor-pointer"
                       >
-                        <div className="w-10 shrink-0 text-center font-mono text-lg text-muted-foreground">
+                        <div className="hidden md:block w-10 shrink-0 text-center font-mono text-lg text-muted-foreground">
                           {ep.episode_number}
                         </div>
                         <div className="relative w-40 max-w-[30%] shrink-0 overflow-hidden rounded-lg aspect-video bg-background">
                           {ep.still_path ? (
                             <img src={IMG(ep.still_path, "w300")} alt="" className="h-full w-full object-cover transition group-hover:scale-105" />
                           ) : null}
-                          <div className="absolute inset-0 grid place-items-center bg-black/40 opacity-0 transition group-hover:opacity-100">
-                            <div className="grid h-10 w-10 place-items-center rounded-full bg-white text-black">
-                              <Play size={16} className="fill-black ml-0.5" />
-                            </div>
-                          </div>
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="font-medium truncate text-[13px] md:text-[16px]">{ep.name}</div>
+                          <div className="font-medium truncate text-[13px] md:text-[16px]"><span className="inline md:hidden font-normal opacity-50 mr-2">E{ep.episode_number}</span>{ep.name}</div>
                           <div className="hidden md:flex mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
                             {ep.air_date && (
                               <span>

@@ -11,6 +11,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { House, Film, Tv, BookSearch, List } from "lucide-react";
+import * as Tooltip from "@radix-ui/react-tooltip";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -214,7 +215,7 @@ function MobileBottomNav() {
   const activeIndex = navItems.findIndex((item) => item.isActive);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 block md:hidden border-t border-border/40 bg-background/80 backdrop-blur-xl px-2 py-1 pb-[calc(0.25rem+env(safe-area-inset-bottom))] shadow-lg">
+    <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 block md:hidden w-[calc(100vw-2rem)] max-w-[400px] rounded-full border border-border/40 bg-background/60 backdrop-blur-xl px-2 py-1 pb-[calc(0.25rem+env(safe-area-inset-bottom))] shadow-lg">
       <div className="relative flex items-center justify-between max-w-md mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -253,12 +254,14 @@ function MobileBottomNav() {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
-    <QueryClientProvider client={queryClient}>
-      <TopLoadingBar />
-      <div className="pb-16 md:pb-0">
-        <Outlet />
-      </div>
-      <MobileBottomNav />
-    </QueryClientProvider>
+    <Tooltip.Provider delayDuration={250} skipDelayDuration={100}>
+  <QueryClientProvider client={queryClient}>
+    <TopLoadingBar />
+    <div className="pb-16 md:pb-0">
+      <Outlet />
+    </div>
+    <MobileBottomNav />
+  </QueryClientProvider>
+</Tooltip.Provider>
   );
 }
