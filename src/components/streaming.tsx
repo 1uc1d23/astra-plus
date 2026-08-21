@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 export { useMediaDrawer, parseMediaParam, formatMediaParam, updateMediaUrlParam } from "@/hooks/use-media-drawer";
 import * as Select from "@radix-ui/react-select";
 import * as Tooltip from "@radix-ui/react-tooltip";
-import { Check, ChevronDown, ChevronUp, Library, AlarmClock, LayoutGrid, List } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Library, AlarmClock, LayoutGrid, List, ArrowUpDown } from "lucide-react";
 
 function TooltipButton({
   tooltip,
@@ -411,8 +411,8 @@ function CarouselEpisodeCard({ ep, media, season, onPlay }: { ep: Episode; media
 
         <p
           className={`text-[10px] sm:text-[11px] leading-relaxed text-muted-foreground/90 px-2 sm:px-2.5 ${expanded
-              ? "line-clamp-[8] overflow-y-auto max-h-[160px]"
-              : "line-clamp-2"
+            ? "line-clamp-[8] overflow-y-auto max-h-[160px]"
+            : "line-clamp-2"
             }`}
         >
           {ep.overview || "No description available."}
@@ -454,7 +454,8 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
 
   const [season, setSeason] = useState(initialSeason);
   const [showAllEpisodes, setShowAllEpisodes] = useState(false);
-  const [episodeViewMode, setEpisodeViewMode] = useState<"carousel" | "list">("carousel");
+  const [sortNewest, setSortNewest] = useState(false);
+  const [episodeViewMode, setEpisodeViewMode] = useState<"carousel" | "list">("list");
   const episodeScrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -690,6 +691,13 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
               <h3 className="text-xl font-semibold">Episodes</h3>
               <div className="flex items-center gap-2">
                 <TooltipButton
+                  tooltip={sortNewest ? "Sort: Oldest First" : "Sort: Newest First"}
+                  onClick={() => setSortNewest(!sortNewest)}
+                  className="inline-flex size-8 shrink-0 cursor-pointer rounded-lg items-center justify-center transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-40 text-muted-foreground/60 hover:bg-white/10 hover:text-white"
+                >
+                  <ArrowUpDown size={16} />
+                </TooltipButton>
+                <TooltipButton
                   tooltip={episodeViewMode === "carousel" ? "List view" : "Carousel view"}
                   onClick={() => setEpisodeViewMode(episodeViewMode === "carousel" ? "list" : "carousel")}
                   className="inline-flex size-8 shrink-0 cursor-pointer rounded-lg items-center justify-center transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-40 text-muted-foreground/60 hover:bg-white/10 hover:text-white"
@@ -737,7 +745,10 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
               </div>
             </div>
             {(() => {
-              const episodes = seasonData?.episodes;
+              const episodes = seasonData?.episodes
+                ? [...seasonData.episodes].sort((a, b) => sortNewest ? b.episode_number - a.episode_number : a.episode_number - b.episode_number)
+                : undefined;
+
               if (!episodes) {
                 return (
                   <div className="flex min-h-24 items-center justify-center rounded-md border bg-muted/20">
@@ -751,7 +762,7 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
                   <div className="relative group/carousel">
                     {canScrollLeft && (
                       <button
-                        onClick={() => episodeScrollRef.current?.scrollBy({ left: -900, behavior: "smooth" })}
+                        onClick={() => episodeScrollRef.current?.scrollBy({ left: -400, behavior: "smooth" })}
                         className="absolute left-2 top-1/2 -translate-y-1/2 z-20 grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-black/70 text-white shadow-xl backdrop-blur-md transition hover:bg-white hover:text-black"
                       >
                         <ArrowLeft size={16} />
@@ -759,7 +770,7 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
                     )}
                     {canScrollRight && (
                       <button
-                        onClick={() => episodeScrollRef.current?.scrollBy({ left: 900, behavior: "smooth" })}
+                        onClick={() => episodeScrollRef.current?.scrollBy({ left: 400, behavior: "smooth" })}
                         className="absolute right-2 top-1/2 -translate-y-1/2 z-20 grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-black/70 text-white shadow-xl backdrop-blur-md transition hover:bg-white hover:text-black"
                       >
                         <ArrowRight size={16} />

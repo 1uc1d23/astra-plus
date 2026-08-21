@@ -5,7 +5,7 @@ import { api, embedUrl, type Media } from "@/lib/tmdb";
 import { DetailDrawer, MovieCard, Nav, PageShell, Player, useMediaDrawer } from "@/components/streaming";
 import { z } from "zod";
 import * as Select from "@radix-ui/react-select";
-import { ChevronDown, Filter, Globe, Shuffle, Check, RotateCcw, ArrowLeft, ArrowRight } from "lucide-react";
+import { ChevronDown, Filter, Globe, Shuffle, Check, X, ArrowLeft, ArrowRight } from "lucide-react";
 
 interface DiscoverBarProps {
   genres: { id: number; name: string }[];
@@ -120,10 +120,10 @@ export function DiscoverBar({
         {isFiltered && (
           <button
             onClick={onReset}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono text-muted-foreground hover:text-foreground transition rounded-full border border-transparent cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono text-white/30 hover:text-foreground transition rounded-full border border-transparent cursor-pointer"
           >
-            <RotateCcw size={13} />
-            <span>Reset</span>
+            <X size={13} />
+            <span>Clear</span>
           </button>
         )}
       </div>

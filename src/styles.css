@@ -34,6 +34,13 @@
   --font-mono: "Geist Mono", ui-monospace, monospace;
 }
 
+@supports (-webkit-touch-callout: none) {
+  :root {
+    --font-sans: -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+}
+
 :root {
   --radius: 0.75rem;
   --background: oklch(0.14 0.005 260);
