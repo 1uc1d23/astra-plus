@@ -199,10 +199,10 @@ window.MEDIA_INFO = {
     // ─────────────────────────────────────────
     function getAlphaApiUrl() {
         if (window.IS_TV) {
-            return `https://lol-xi-woad.vercel.app/tv?id=${window.TMDB_ID}&s=${window.TMDB_SEASON}&e=${window.TMDB_EPISODE}`;
+            return `https://movie-scraper-one.vercel.app/api/tv?id=${window.TMDB_ID}&s=${window.TMDB_SEASON}&e=${window.TMDB_EPISODE}`;
         }
 
-        return `https://lol-xi-woad.vercel.app/movie?id=${window.TMDB_ID}`;
+        return `https://movie-scraper-one.vercel.app/api/movie?id=${window.TMDB_ID}`;
     }
 
     function getBravoApiUrl() {
@@ -887,8 +887,8 @@ window.MEDIA_INFO = {
 
             const alphaData = await alphaResponse.json();
 
-            if (alphaData?.streams && Array.isArray(alphaData.streams)) {
-                const alphaStreams = alphaData.streams
+            if (alphaData?.sources && Array.isArray(alphaData.sources)) {
+                const alphaStreams = alphaData.sources
                     .filter(stream =>
                         stream &&
                         typeof stream.url === 'string' &&
@@ -2061,38 +2061,38 @@ window.MEDIA_INFO = {
     // ─────────────────────────────────────────
     // CONTROLS VISIBILITY
     // ─────────────────────────────────────────
-   function hideControlsNow() {
-    clearTimeout(hideTimer);
+    function hideControlsNow() {
+        clearTimeout(hideTimer);
 
-    controls.style.opacity = '0';
-    shadowOverlay.style.opacity = '0';
+        controls.style.opacity = '0';
+        shadowOverlay.style.opacity = '0';
 
-    controls.style.transform = 'translateX(-50%) translateY(6px)';
+        controls.style.transform = 'translateX(-50%) translateY(6px)';
 
-    playerWrap.classList.remove('controls-visible');
+        playerWrap.classList.remove('controls-visible');
 
-    syncChannelOverlay(0);
-}
-function showControls() {
-    if (isHolding) return;
+        syncChannelOverlay(0);
+    }
+    function showControls() {
+        if (isHolding) return;
 
-    clearTimeout(hideTimer);
+        clearTimeout(hideTimer);
 
-    controls.style.opacity = '1';
-    shadowOverlay.style.opacity = '1';
+        controls.style.opacity = '1';
+        shadowOverlay.style.opacity = '1';
 
-    controls.style.transform = 'translateX(-50%) translateY(0)';
+        controls.style.transform = 'translateX(-50%) translateY(0)';
 
-    playerWrap.classList.add('controls-visible');
+        playerWrap.classList.add('controls-visible');
 
-    syncChannelOverlay(1);
+        syncChannelOverlay(1);
 
-    hideTimer = setTimeout(() => {
-        if (!video.paused && !isDraggingProgress && !settingsOpen) {
-            hideControlsNow();
-        }
-    }, 2000);
-}
+        hideTimer = setTimeout(() => {
+            if (!video.paused && !isDraggingProgress && !settingsOpen) {
+                hideControlsNow();
+            }
+        }, 2000);
+    }
 
     // Phone tap-on-screen behavior: toggle controls visibility instead of play/pause
     function toggleControlsVisibility() {
