@@ -5,16 +5,16 @@ window.TMDB_SEASON = params.get("s") || null;
 window.TMDB_EPISODE = params.get("e") || null;
 
 window.IS_TV = Boolean(
-  window.TMDB_SEASON && window.TMDB_EPISODE
+    window.TMDB_SEASON && window.TMDB_EPISODE
 );
 
 window.TMDB_API_KEY = 'ea021b3b0775c8531592713ab727f254';
 window.NETFLIX_MODE = '1';
 window.MEDIA_INFO = {
-  title: '',
-  subtitle: '',
-  description: '',
-  logo: ''
+    title: '',
+    subtitle: '',
+    description: '',
+    logo: ''
 };
 
 (function () {
@@ -22,6 +22,14 @@ window.MEDIA_INFO = {
     const playerWrap = document.getElementById('playerWrap');
     const playPause = document.getElementById('playPause');
     const playIcon = document.getElementById('playIcon');
+
+    // Phone-only controls (see script_mobile.js for wiring)
+    const phonePlayIcon = document.getElementById('phonePlayIcon');
+
+    // Tailwind's `lg` breakpoint (1024px) — matches the "hidden lg:flex" / "lg:hidden" classes already used in index.html
+    function isPhoneLayout() {
+        return window.matchMedia('(max-width: 1023px)').matches;
+    }
     const pipBtn = document.getElementById('pipBtn');
     const fsBtn = document.getElementById('fsBtn');
     const rewind10btn = document.getElementById('rewind10btn');
@@ -45,7 +53,6 @@ window.MEDIA_INFO = {
     const speedOptions = document.getElementById('speedOptions');
     const qualityOptions = document.getElementById('qualityOptions');
     const serverOptions = document.getElementById('serverOptions');
-    const serverValue = document.getElementById('serverValue');
 
     // Caption sync
     const captionSyncLinkElement = document.getElementById('captionSyncLink');
@@ -1942,9 +1949,11 @@ window.MEDIA_INFO = {
         if (video.paused) {
             playIcon.textContent = 'play_arrow';
             playPause.setAttribute('aria-pressed', 'false');
+            if (phonePlayIcon) phonePlayIcon.textContent = 'play_arrow';
         } else {
             playIcon.textContent = 'pause';
             playPause.setAttribute('aria-pressed', 'true');
+            if (phonePlayIcon) phonePlayIcon.textContent = 'pause';
         }
     }
 
@@ -2052,23 +2061,47 @@ window.MEDIA_INFO = {
     // ─────────────────────────────────────────
     // CONTROLS VISIBILITY
     // ─────────────────────────────────────────
-    function showControls() {
-        if (isHolding) return;
-        clearTimeout(hideTimer);
-        controls.style.opacity = '1';
-        shadowOverlay.style.opacity = '1';
-        controls.style.transform = 'translateX(-50%) translateY(0)';
-        playerWrap.classList.add('controls-visible');
-        syncChannelOverlay(1);
-        hideTimer = setTimeout(() => {
-            if (!video.paused && !isDraggingProgress && !settingsOpen) {
-                controls.style.opacity = '0';
-                shadowOverlay.style.opacity = '0';
-                controls.style.transform = 'translateX(-50%) translateY(6px)';
-                playerWrap.classList.remove('controls-visible');
-                syncChannelOverlay(0);
-            }
-        }, 2000);
+   function hideControlsNow() {
+    clearTimeout(hideTimer);
+
+    controls.style.opacity = '0';
+    shadowOverlay.style.opacity = '0';
+
+    controls.style.transform = 'translateX(-50%) translateY(6px)';
+
+    playerWrap.classList.remove('controls-visible');
+
+    syncChannelOverlay(0);
+}
+function showControls() {
+    if (isHolding) return;
+
+    clearTimeout(hideTimer);
+
+    controls.style.opacity = '1';
+    shadowOverlay.style.opacity = '1';
+
+    controls.style.transform = 'translateX(-50%) translateY(0)';
+
+    playerWrap.classList.add('controls-visible');
+
+    syncChannelOverlay(1);
+
+    hideTimer = setTimeout(() => {
+        if (!video.paused && !isDraggingProgress && !settingsOpen) {
+            hideControlsNow();
+        }
+    }, 2000);
+}
+
+    // Phone tap-on-screen behavior: toggle controls visibility instead of play/pause
+    function toggleControlsVisibility() {
+        if (isDraggingProgress) return;
+        if (playerWrap.classList.contains('controls-visible')) {
+            hideControlsNow();
+        } else {
+            showControls();
+        }
     }
 
     // ─────────────────────────────────────────
@@ -2292,22 +2325,31 @@ window.MEDIA_INFO = {
     });
 
     // Mouse / touch to show controls
+    // On phones, touchstart/touchmove no longer force-show controls — a tap on the
+    // screen now toggles visibility instead (see endHold below + script_mobile.js).
     ['mousemove', 'touchstart', 'touchmove', 'mouseenter'].forEach(eventName => {
-        playerWrap.addEventListener(eventName, showControls, { passive: true });
+        playerWrap.addEventListener(eventName, (e) => {
+            if (isPhoneLayout() && (e.type === 'touchstart' || e.type === 'touchmove')) return;
+            showControls();
+        }, { passive: true });
     });
 
-    rewind10btn.addEventListener('click', () => {
-        video.currentTime = Math.max((video.currentTime || 0) - 10, 0);
-        showToast('<i data-feather="rewind" style="margin-right:6px;"></i> 10s', 800);
+    function rewindVideo(seconds = 10) {
+        video.currentTime = Math.max((video.currentTime || 0) - seconds, 0);
+        showToast('<i data-feather="rewind" style="margin-right:6px;"></i> ' + seconds + 's', 800);
         if (typeof feather !== 'undefined') feather.replace({ width: 14, height: 14, fill: 'currentColor' });
         showControls();
-    });
-    forward10btn.addEventListener('click', () => {
-        video.currentTime = Math.min((video.currentTime || 0) + 10, video.duration || Infinity);
-        showToast('<i data-feather="fast-forward" style="margin-right:6px;"></i> 10s', 800);
+    }
+
+    function forwardVideo(seconds = 10) {
+        video.currentTime = Math.min((video.currentTime || 0) + seconds, video.duration || Infinity);
+        showToast('<i data-feather="fast-forward" style="margin-right:6px;"></i> ' + seconds + 's', 800);
         if (typeof feather !== 'undefined') feather.replace({ width: 14, height: 14, fill: 'currentColor' });
         showControls();
-    });
+    }
+
+    rewind10btn.addEventListener('click', () => rewindVideo(10));
+    forward10btn.addEventListener('click', () => forwardVideo(10));
 
     // Video state events
     video.addEventListener('play', () => { updatePlayState(); updatePauseOverlay(); showControls(); });
@@ -2358,16 +2400,32 @@ window.MEDIA_INFO = {
         }, 400); // 400ms threshold to detect a "hold"
     };
 
+    let ignoreNextClick = false;
+
     const endHold = (e) => {
         clearTimeout(holdTimeout);
-        speedToast.classList.remove('show')
+        speedToast.classList.remove('show');
+
+        if (e.type === 'touchend') {
+            ignoreNextClick = true;
+        }
 
         if (isHolding) {
             video.playbackRate = 1.0;
             e.preventDefault();
-        } else if (e.type === 'click') {
-            togglePlay();
+        } else if (e.type === 'click' || e.type === 'touchend') {
+            if (e.type === 'click' && ignoreNextClick) {
+                ignoreNextClick = false;
+                return;
+            }
+
+            if (isPhoneLayout()) {
+                toggleControlsVisibility();
+            } else {
+                togglePlay();
+            }
         }
+
         if (pausedDuringHold) {
             video.pause();
             pausedDuringHold = false;
@@ -2429,7 +2487,12 @@ window.MEDIA_INFO = {
 
     // Touch Events
     video.addEventListener('touchstart', startHold, { passive: true });
-    video.addEventListener('touchend', endHold);
+
+    video.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        endHold(e);
+    });
+
     video.addEventListener('touchcancel', () => {
         clearTimeout(holdTimeout);
         video.playbackRate = 1.0;
@@ -2481,4 +2544,17 @@ window.MEDIA_INFO = {
     window.selectFontFamily = window.selectFontFamily;
     window._videoPlayer = video;
     window._hlsPlayer = hls;
+
+    // Public API for script_mobile.js — keeps the phone controls using the
+    // exact same play/pause/rewind/forward/show-hide logic as the desktop ones.
+    window.PlayerAPI = {
+        video,
+        isPhoneLayout,
+        togglePlay,
+        rewind: rewindVideo,
+        forward: forwardVideo,
+        showControls,
+        hideControlsNow,
+        toggleControlsVisibility
+    };
 })();

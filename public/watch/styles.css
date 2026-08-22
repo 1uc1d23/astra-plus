@@ -169,7 +169,6 @@ video::-webkit-media-controls {
     position: fixed;
     top: 0;
     left: 0;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 20%, rgba(0, 0, 0, 0.2) 80%, rgba(0, 0, 0, 0.8) 100%);
     transition: opacity .18s;
     pointer-events: none;
 }
@@ -332,7 +331,6 @@ video::-webkit-media-controls {
 }
 
 .btn {
-    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
@@ -1039,7 +1037,6 @@ video::-webkit-media-controls {
 .netflix-pause {
     position: absolute;
     inset: 0;
-    display: flex;
     transform: translateY(-6px);
     align-items: center;
     pointer-events: none;
@@ -1122,10 +1119,187 @@ video::-webkit-media-controls {
     background: rgba(255, 255, 255, .1);
 }
 
+/* ─────────────────────────────────────────────────────────────
+   PHONE PLAYER CONTROLS
+   Only rendered below Tailwind's `lg` breakpoint (1024px) via the
+   `flex lg:hidden` classes already on #phonePlayerControls.
+   Sits as a fixed full-screen overlay so the back button pins to
+   the top-left corner and the play/rewind/forward group sits dead
+   center, regardless of where #controls itself is positioned.
+   ────/* =========================================================
+   PHONE CONTROLS
+   ========================================================= */
+.phone-player-controls {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 30 !important;
+    display: block !important;
+    pointer-events: none;
+}
+
+/* BACK */
+.phone-back-btn {
+    position: absolute !important;
+    top: 16px !important;
+    left: 16px !important;
+
+    width: 40px !important;
+    height: 40px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    border: 0 !important;
+    border-radius: 50% !important;
+
+    background: rgba(0,0,0,.4) !important;
+    color: white !important;
+
+    pointer-events: auto !important;
+    z-index: 100 !important;
+}
+
+.phone-back-btn .material-symbols-rounded {
+    font-size: 22px !important;
+}
+
+
+/* CENTER — FORCE IT INTO THE MIDDLE OF PLAYER */
+.phone-center-controls {
+    position: absolute !important;
+
+    top: 50% !important;
+    left: 50% !important;
+
+    width: auto !important;
+    height: auto !important;
+
+    transform: translate(-50%, -50%) !important;
+
+    display: flex !important;
+    flex-direction: row !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    gap: 36px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    pointer-events: none !important;
+
+    z-index: 101 !important;
+}
+
+
+/* ALL THREE BUTTONS */
+.phone-center-controls button {
+    position: relative !important;
+
+    flex: 0 0 auto !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    border: 0 !important;
+    border-radius: 50% !important;
+
+    color: white !important;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+
+    pointer-events: auto !important;
+
+    box-sizing: border-box !important;
+}
+
+
+/* REWIND / FORWARD */
+.phone-center-controls .phone-skip-btn {
+    width: 80px !important;
+    height: 80px !important;
+}
+
+.phone-center-controls .phone-skip-btn .material-symbols-rounded {
+    font-size: 40px !important;
+}
+
+
+/* BIG PLAY */
+.phone-center-controls .phone-play-btn {
+    width: 100px !important;
+    height: 100px !important;
+}
+
+.phone-center-controls .phone-play-btn .material-symbols-rounded {
+    font-size: 120px !important;
+}
+
+
+/* SMALL PHONES */
+@media (max-width: 420px) {
+    .phone-center-controls {
+        gap: 24px !important;
+    }
+
+    .phone-center-controls .phone-skip-btn {
+        width: 52px !important;
+        height: 52px !important;
+    }
+
+    .phone-center-controls .phone-play-btn {
+        width: 84px !important;
+        height: 84px !important;
+    }
+
+    .phone-center-controls .phone-skip-btn .material-symbols-rounded {
+        font-size: 34px !important;
+    }
+
+    .phone-center-controls .phone-play-btn .material-symbols-rounded {
+        font-size: 54px !important;
+    }
+}
+
+
+/* DESKTOP */
+@media (min-width: 1024px) {
+    .phone-player-controls {
+        display: none !important;
+    }
+}
+
+.phone-player-controls {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.18s ease, visibility 0.18s ease;
+}
+
+.player-wrap.controls-visible .phone-player-controls {
+    opacity: 1;
+    visibility: visible;
+}
+.player-wrap.controls-visible .phone-player-controls button {
+    pointer-events: auto;
+}
+
+.player-wrap:not(.controls-visible) .phone-player-controls button {
+    pointer-events: none;
+}
+
 #play-pulse {
     position: absolute;
     inset: 0;
-    display: flex;
     align-items: center;
     justify-content: center;
     pointer-events: none;
