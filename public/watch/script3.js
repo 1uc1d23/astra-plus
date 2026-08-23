@@ -44,7 +44,7 @@
 
         const isPastEpisode = season < _currentSeason
             || (season === _currentSeason && ep.episode_number < _currentEpisode);
-        if (isPastEpisode && (!Number.isFinite(watchedSeconds) || watchedSeconds <= 5)) return 100;
+        if (isPastEpisode && (!Number.isFinite(watchedSeconds) || watchedSeconds <= 5)) return 0;
 
         if (!Number.isFinite(watchedSeconds) || watchedSeconds <= 5) return 0;
         if (!Number.isFinite(durationSeconds) || durationSeconds <= 0) return isPastEpisode ? 100 : 0;

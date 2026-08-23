@@ -21,7 +21,6 @@ interface DiscoverBarProps {
   setSelectedMediaType: (v: string) => void;
   selectedCountry: string;
   setSelectedCountry: (v: string) => void;
-  onSurpriseMe: () => void;
   onReset: () => void;
 }
 
@@ -39,7 +38,6 @@ export function DiscoverBar({
   setSelectedMediaType,
   selectedCountry,
   setSelectedCountry,
-  onSurpriseMe,
   onReset,
 }: DiscoverBarProps) {
   const isFiltered = Boolean(
@@ -127,15 +125,6 @@ export function DiscoverBar({
           </button>
         )}
       </div>
-
-      {/* Right Group: Surprise Me Button (Shuffle Icon on Left) */}
-      <button
-        onClick={onSurpriseMe}
-        className="inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:opacity-90 transition-opacity cursor-pointer ml-auto"
-      >
-        <Shuffle className="h-4 w-4" />
-        <span>Surprise Me</span>
-      </button>
     </div>
   );
 }
@@ -386,15 +375,6 @@ function BrowsePage() {
     enabled: type === "discover",
   });
 
-  // Surprise Me Handler
-  const handleSurpriseMe = () => {
-    const currentItems = discoverQuery.data?.results || [];
-    if (currentItems.length > 0) {
-      const randomIndex = Math.floor(Math.random() * currentItems.length);
-      openDetail(currentItems[randomIndex]);
-    }
-  };
-
   let savedList: Media[] = [];
   if (type === "mylist" && typeof window !== "undefined") {
     try {
@@ -483,7 +463,6 @@ function BrowsePage() {
             setSelectedMediaType={setSelectedMediaType}
             selectedCountry={selectedCountry}
             setSelectedCountry={setSelectedCountry}
-            onSurpriseMe={handleSurpriseMe}
             onReset={handleResetFilters}
           />
         )}

@@ -220,7 +220,7 @@ function Home() {
 
           <div className="text-left md:text-right text-xs text-muted-foreground flex flex-col gap-1">
             <div>© {new Date().getFullYear()} ASTRA. All rights reserved.</div>
-            <div className="text-[11px] opacity-70">Data provided by TMDB · Not affiliated.</div>
+            <div className="text-[11px] opacity-70">Created by <a href="https://github.com/1uc1d23" className="text-mono transition-colors duration-200 ease-in-out hover:text-accent"><i className="fa-brands fa-github ml-1"/> Lucid</a></div>
           </div>
         </div>
       </footer>

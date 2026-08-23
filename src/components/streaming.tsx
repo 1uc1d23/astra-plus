@@ -227,75 +227,130 @@ export function Hero({ items, onOpen, onPlay }: { items: Media[]; onOpen: (m: Me
   const logo = englishLogo(detail || active);
   return (
     <section className="relative h-[92vh] min-h-[560px] w-full overflow-hidden">
-      {list.map((m, i) => (
-        <div
-          key={m.id}
-          className={`absolute inset-0 transition-opacity duration-1000 ${i === idx ? "opacity-100" : "opacity-0"}`}
-        >
-          <img
-            src={IMG(m.backdrop_path, "original")}
-            alt=""
-            className="h-full w-full object-cover"
-          />
-        </div>
-      ))}
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
-      <div className="relative z-10 flex h-full items-end md:items-center">
-        <div key={active.id} className="fade-up max-w-2xl px-6 md:px-12 pb-16 md:pb-0">
-          <div className="text-mono text-[11px] uppercase tracking-[0.25em] text-accent mb-4">
-            {isTV(active) ? "Featured Series" : "Featured Film"}
-          </div>
-          {!detail ? (
-            <div className="mb-6 h-16 md:h-24 w-64 md:w-96 rounded-2xl skeleton" />
-          ) : logo ? (
-            <img
-              src={IMG(logo.file_path, "w500")}
-              alt={title(active)}
-              className="mb-6 max-h-28 md:max-h-28 w-auto drop-shadow-[0_8px_20px_rgba(0,0,0,0.9)]"
-            />
-          ) : (
-            <h1 className="mb-6 text-4xl md:text-6xl font-bold tracking-tight">{title(active)}</h1>
-          )}
-          <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1 text-xs"><Star size={12} className="fill-accent stroke-accent" /><span className="text-accent">{active.vote_average?.toFixed(1)}</span><span className="text-muted-foreground"> / 10</span></span>
-            <span>·</span>
-            <span className="inline-flex items-center gap-1"><Calendar size={12} />{year(active)}</span>
-            {detail?.runtime ? (<><span>·</span><span className="inline-flex items-center gap-1"><Clock size={12} />{formatRuntime(detail.runtime)}</span></>) : null}
-            {detail?.number_of_seasons ? (<><span>·</span><span>{detail.number_of_seasons} Seasons</span></>) : null}
-            {detail?._ageRating && (<><span>·</span><span className="rounded-sm border border-border px-2 py-0.5 text-[12px] uppercase">{detail._ageRating}</span></>)}
-          </div>
-          <p className="mb-8 line-clamp-2 max-w-xl text-sm md:text-base leading-relaxed text-muted-foreground">
-            {active.overview}
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => onPlay(active)}
-              className="group inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-accent hover:text-accent-foreground hover:scale-105"
-            >
-              <Play size={16} className="fill-current" />
-              Play
-            </button>
-            <button
-              onClick={() => onOpen(active)}
-              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-md px-5 py-3 text-sm font-medium transition hover:bg-white/20 hover:scale-105"
-            >
-              <Info size={16} />
-              More info
-            </button>
-          </div>
-          <div className="mt-12 flex gap-2">
-            {list.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setIdx(i)}
-                className={`h-1 rounded-full transition-all ${i === idx ? "w-10 bg-white" : "w-4 bg-white/30 hover:bg-white/60"}`}
-              />
-            ))}
-          </div>
-        </div>
+  {list.map((m, i) => (
+    <div
+      key={m.id}
+      className={`absolute inset-0 transition-opacity duration-1000 ${
+        i === idx ? "opacity-100" : "opacity-0"
+      }`}
+    >
+      <img
+        src={IMG(m.backdrop_path, "original")}
+        alt=""
+        className="h-full w-full object-cover"
+      />
+    </div>
+  ))}
+
+  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+  <div className="absolute inset-x-0 bottom-0 h-1/2 backdrop-blur-md [mask-image:linear-gradient(to_top,black,transparent)]" />
+  <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/50 to-transparent" />
+
+  <div className="relative z-10 flex h-full items-end md:items-center">
+    <div
+      key={active.id}
+      className="fade-up max-w-2xl px-6 md:px-12 pb-16 md:pb-0"
+    >
+      <div className="text-mono text-[11px] uppercase tracking-[0.25em] text-accent mb-4">
+        {isTV(active) ? "Featured Series" : "Featured Film"}
       </div>
-    </section>
+
+      {!detail ? (
+        <div className="mb-6 h-16 md:h-24 w-64 md:w-96 rounded-2xl skeleton" />
+      ) : logo ? (
+        <img
+          src={IMG(logo.file_path, "w500")}
+          alt={title(active)}
+          className="mb-6 max-h-28 md:max-h-28 w-auto drop-shadow-[0_8px_20px_rgba(0,0,0,0.3)]"
+        />
+      ) : (
+        <h1 className="mb-6 text-4xl md:text-6xl font-bold tracking-tight">
+          {title(active)}
+        </h1>
+      )}
+
+      <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1 text-xs">
+          <Star size={12} className="fill-accent stroke-accent" />
+          <span className="text-accent">{active.vote_average?.toFixed(1)}</span>
+          <span className="text-muted-foreground"> / 10</span>
+        </span>
+
+        <span>·</span>
+
+        <span className="inline-flex items-center gap-1">
+          <Calendar size={12} />
+          {year(active)}
+        </span>
+
+        {detail?.runtime ? (
+          <>
+            <span>·</span>
+            <span className="inline-flex items-center gap-1">
+              <Clock size={12} />
+              {formatRuntime(detail.runtime)}
+            </span>
+          </>
+        ) : null}
+
+        {detail?.number_of_seasons ? (
+          <>
+            <span>·</span>
+            <span>{detail.number_of_seasons} Seasons</span>
+          </>
+        ) : null}
+
+        {detail?._ageRating && (
+          <>
+            <span>·</span>
+            <span className="rounded-sm border border-white/15 px-2 py-0.5 text-[12px] uppercase">
+              {detail._ageRating}
+            </span>
+          </>
+        )}
+      </div>
+
+      <p className="mb-8 line-clamp-2 max-w-xl text-sm md:text-base leading-relaxed text-muted-foreground">
+        {active.overview}
+      </p>
+
+      <div className="flex flex-wrap gap-3">
+        <button
+          onClick={() => onPlay(active)}
+          className="group inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-accent hover:text-accent-foreground hover:scale-105"
+        >
+          <Play size={16} className="fill-current" />
+          Play
+        </button>
+
+        <button
+          onClick={() => onOpen(active)}
+          className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-md px-5 py-3 text-sm font-medium transition hover:bg-white/20 hover:scale-105"
+        >
+          <Info size={16} />
+          More info
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {/* Centered to the full hero/screen */}
+  <div className="absolute bottom-6 md:bottom-24 left-1/2 z-20 -translate-x-1/2 flex items-center justify-center gap-2">
+    {list.map((_, i) => (
+      <button
+        key={i}
+        onClick={() => setIdx(i)}
+        aria-label={`Go to slide ${i + 1}`}
+        className={`h-1.5 rounded-full transition-all duration-300 ${
+          i === idx
+            ? "w-8 bg-white"
+            : "w-2 bg-white/35 hover:bg-white/60"
+        }`}
+      />
+    ))}
+  </div>
+</section>
+
   );
 }
 
@@ -565,7 +620,7 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl px-6 md:px-10 py-6">
+      <div className="mx-auto max-w-6xl px-6 md:px-10 pb-6">
         <div className="flex flex-wrap items-center gap-3 mb-6">
           <button
             onClick={handlePlayAction}
@@ -641,7 +696,7 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
         <div className="grid gap-8 md:grid-cols-3">
           <div className="md:col-span-2">
             {m.tagline && <div className="text-mono text-xs uppercase tracking-widest text-accent mb-2">{m.tagline}</div>}
-            <p className="text-sm leading-relaxed text-foreground/90">{m.overview}</p>
+            <p className="text-sm leading-relaxed text-foreground/50">{m.overview}</p>
             {tv && m.seasons && (() => {
               const now = new Date();
               const upcomingSeason = m.seasons
@@ -687,9 +742,9 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
 
         {tv && m.seasons?.length ? (
           <div className="mt-10">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-wrap items-center justify-between mb-4">
               <h3 className="text-xl font-semibold">Episodes</h3>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 ml-auto">
                 <TooltipButton
                   tooltip={sortNewest ? "Sort: Oldest First" : "Sort: Newest First"}
                   onClick={() => setSortNewest(!sortNewest)}
