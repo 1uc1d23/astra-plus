@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { Play, Info, Star, ArrowLeft, ArrowRight, X, Plus, Calendar, Clock, Film } from "react-feather";
+import { Play, Star, ArrowLeft, ArrowRight, X, Plus, Calendar, Clock, Film } from "react-feather";
 import { Drawer } from "vaul";
 import { IMG, api, embedUrl, englishLogo, isTV, title, year, getContinueWatchingList, type Media, type Episode } from "@/lib/tmdb";
 import { useQuery } from "@tanstack/react-query";
 export { useMediaDrawer, parseMediaParam, formatMediaParam, updateMediaUrlParam } from "@/hooks/use-media-drawer";
 import * as Select from "@radix-ui/react-select";
 import * as Tooltip from "@radix-ui/react-tooltip";
-import { Check, ChevronDown, ChevronUp, Library, AlarmClock, LayoutGrid, List, ArrowUpDown } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Library, AlarmClock, LayoutGrid, List, ArrowUpDown, ArrowUp } from "lucide-react";
 
 function TooltipButton({
   tooltip,
@@ -242,18 +242,14 @@ export function Hero({ items, onOpen, onPlay }: { items: Media[]; onOpen: (m: Me
     </div>
   ))}
 
-  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
   <div className="absolute inset-x-0 bottom-0 h-1/2 backdrop-blur-md [mask-image:linear-gradient(to_top,black,transparent)]" />
-  <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/50 to-transparent" />
+  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 via-[20%] to-transparent" />
 
   <div className="relative z-10 flex h-full items-end md:items-center">
     <div
       key={active.id}
-      className="fade-up max-w-2xl px-6 md:px-12 pb-16 md:pb-0"
+      className="max-w-2xl px-6 md:px-12 pb-16 md:pb-0"
     >
-      <div className="text-mono text-[11px] uppercase tracking-[0.25em] text-accent mb-4">
-        {isTV(active) ? "Featured Series" : "Featured Film"}
-      </div>
 
       {!detail ? (
         <div className="mb-6 h-16 md:h-24 w-64 md:w-96 rounded-2xl skeleton" />
@@ -310,7 +306,7 @@ export function Hero({ items, onOpen, onPlay }: { items: Media[]; onOpen: (m: Me
         )}
       </div>
 
-      <p className="mb-8 line-clamp-2 max-w-xl text-sm md:text-base leading-relaxed text-muted-foreground">
+      <p className="mb-8 line-clamp-2 max-w-xl text-sm md:text-base leading-relaxed text-white/60">
         {active.overview}
       </p>
 
@@ -325,10 +321,10 @@ export function Hero({ items, onOpen, onPlay }: { items: Media[]; onOpen: (m: Me
 
         <button
           onClick={() => onOpen(active)}
-          className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-md px-5 py-3 text-sm font-medium transition hover:bg-white/20 hover:scale-105"
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 backdrop-blur-md px-5 py-3 text-sm font-medium transition hover:bg-white/20 hover:scale-105"
         >
-          <Info size={16} />
-          More info
+          <ArrowUp size={16} />
+          Expand
         </button>
       </div>
     </div>

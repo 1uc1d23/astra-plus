@@ -5,7 +5,7 @@ import { Link } from "@tanstack/react-router";
 import { api, getContinueWatchingList, embedUrl, type Media, type ContinueWatchingItem } from "@/lib/tmdb";
 import { DetailDrawer, Hero, Nav, PageShell, Player, Row, useMediaDrawer } from "@/components/streaming";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { ChevronDown, Check } from "lucide-react";
+import { ChevronDown, Check, Gift } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -77,7 +77,7 @@ function ProviderRow({
             >
               {p.provider_id === provider.provider_id && (
                 <span className="absolute left-2.5 flex h-3.5 w-3.5 items-center justify-center">
-                    <Check className="h-4 w-4 text-accent" />
+                  <Check className="h-4 w-4 text-accent" />
                 </span>
               )}
               {p.provider_name}
@@ -199,7 +199,7 @@ function Home() {
         <Row label="New Releases" items={upcoming.data?.results} onOpen={openDetail} />
       </div>
 
-      <footer className="mt-16 border-t border-border/50 py-12 px-6 md:px-12 bg-background">
+      <footer className="hidden md:block mt-16 border-t border-border/50 py-12 px-6 md:px-12 bg-background">
         <div className="mx-auto max-w-[1600px] flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
           <div className="flex flex-col gap-2">
             <Link to="/" className="inline-flex items-center">
@@ -219,8 +219,13 @@ function Home() {
           </div>
 
           <div className="text-left md:text-right text-xs text-muted-foreground flex flex-col gap-1">
-            <div>© {new Date().getFullYear()} ASTRA. All rights reserved.</div>
-            <div className="text-[11px] opacity-70">Created by <a href="https://github.com/1uc1d23" className="text-mono transition-colors duration-200 ease-in-out hover:text-accent"><i className="fa-brands fa-github ml-1"/> Lucid</a></div>
+            <div>© {new Date().getFullYear()} ASTRA+. All rights reserved.</div><div className="inline-flex ml-auto text-[11px]">
+              <span className="opacity-70">Data by TMDB</span><span className="mx-2 opacity-30">·</span>
+              <a href="https://github.com/1uc1d23" className="inline-flex items-center gap-1 text-mono border-b border-border opacity-70 transition-colors duration-200 ease-in-out hover:text-white hover:opacity-100" >
+                <Gift className="h-3 w-3 shrink-0" />
+                Feedback
+              </a>
+            </div>
           </div>
         </div>
       </footer>
