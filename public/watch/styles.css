@@ -811,7 +811,7 @@ video::-webkit-media-controls {
 .dyn-dropdown {
     width: 100%;
     border: 1px solid rgba(255, 255, 255, .1);
-    border-radius: 9px;
+    border-radius: 999px;
     background: rgba(255, 255, 255, .06);
     color: rgba(255, 255, 255, .85);
     font-size: 12px;
@@ -833,7 +833,8 @@ video::-webkit-media-controls {
 }
 
 .dyn-chevron {
-    opacity: 0.3;
+    opacity: 0.5;
+    font-size: 14px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -843,7 +844,7 @@ video::-webkit-media-controls {
 
 .dyn-menu-wrap.open .dyn-chevron {
     transform: rotate(180deg);
-    opacity: 0.6;
+    opacity: 0.8;
 }
 
 .dyn-chevron svg {
@@ -864,7 +865,7 @@ video::-webkit-media-controls {
     border-radius: 12px;
     box-shadow: 0 10px 32px rgba(0, 0, 0, .6);
     opacity: 0;
-    transform: translateY(5px);
+    transform: translateY(-5px);
     pointer-events: none;
     max-height: 220px;
     overflow-y: auto;
@@ -923,6 +924,7 @@ video::-webkit-media-controls {
 
 .dyn-check {
     opacity: 0;
+    color: var(--accent);
 }
 
 .dyn-check svg {
@@ -1930,13 +1932,12 @@ video::-webkit-media-controls {
 /* ── Season selector (re-uses .dyn-* from existing styles) ───── */
 .ep-season-dropdown {
     font-size: 13px !important;
-    padding: 6px 10px !important;
-    min-width: 110px;
-    background: rgba(255,255,255,0.06) !important;
+    padding: 6px 12px !important;
+    min-width: 115px;
+    background: rgba(255,255,255,0.04) !important;
     border: 1px solid rgba(255,255,255,0.1) !important;
-    border-radius: 8px !important;
+    border-radius: 999px !important;
     color: rgba(255,255,255,0.85) !important;
-    font-weight: 500 !important;
     gap: 6px !important;
     justify-content: space-between !important;
 }
@@ -2013,7 +2014,7 @@ video::-webkit-media-controls {
 /* Currently watching highlight */
 .ep-item--current {
     background: rgba(255,255,255,0.04);
-    border-left: 2px solid rgba(255,255,255,0.55);
+    border-left: 2px solid var(--accent);
     padding-left: 16px; /* compensate for the border */
 }
 
@@ -2141,8 +2142,8 @@ video::-webkit-media-controls {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    padding-top: 2px;
+    gap: 2px;
+    padding-top: 1px;
 }
 
 .ep-meta {
@@ -2153,25 +2154,25 @@ video::-webkit-media-controls {
 }
 
 .ep-number {
-    font-family: 'Geist Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
-    color: rgba(255,255,255,0.38);
-    letter-spacing: 0.04em;
+    font-size: 10px;
+    color: oklch(65% .01 260);
+    opacity: 0.6;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
 }
 
 .ep-runtime {
-    font-family: 'Geist Mono', monospace;
-    font-size: 11px;
-    color: rgba(255,255,255,0.28);
+    font-size: 10px;
+    color: oklch(65% .01 260);
+    opacity: 0.6;
     letter-spacing: 0.02em;
 }
 
 .ep-runtime::before {
-    content: '·';
+    content: '-';
+    color: oklch(65% .01 260);
     margin-right: 8px;
-    opacity: 0.6;
+    opacity: 0.24;
 }
 
 .ep-watching-badge {
@@ -2207,13 +2208,13 @@ video::-webkit-media-controls {
 
 .ep-desc {
     font-size: 11.5px;
-    color: rgba(255,255,255,0.38);
+    color: oklch(65% .01 260);
+    opacity: 0.85;
     line-height: 1.5;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    font-weight: 400;
 }
 
 /* ── Loading state ───────────────────────────────────────────── */

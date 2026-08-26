@@ -175,7 +175,7 @@
         </div>
         <div class="ep-info">
           <div class="ep-meta">
-            <span class="ep-number">E${pad(ep.episode_number)}</span>
+            <span class="ep-number">Episode ${pad(ep.episode_number)}</span>
             ${runtime ? `<span class="ep-runtime">${runtime}</span>` : ''}
             ${isCurrent ? `<span class="ep-watching-badge">Watching</span>` : ''}
           </div>
