@@ -32,6 +32,11 @@
   <!-- ── app-wrapper needed by drawer.js for the scale/blur effect ── -->
   <div id="app-wrapper">
     <div class="player-wrap controls-visible" id="playerWrap">
+      <button type="button" class="back-btn" id="backBtn">
+          <span class="material-symbols-rounded">
+            arrow_back
+          </span>
+        </button>
       <div id="spinner" class="spinner" aria-hidden="true"></div>
       <div id="play-pulse" class="hidden lg:flex">
         <div class="pulse-icon" id="pulse-icon">
@@ -67,335 +72,329 @@
         </button>
       </div>
       <div class="shadow-overlay" id="shadowOverlay"></div>
-        <div class="phone-player-controls flex lg:hidden" id="phonePlayerControls">
+      <div class="phone-player-controls flex lg:hidden" id="phonePlayerControls">
 
-          <!-- Back — top left -->
-          <button type="button" class="phone-back-btn" id="phoneBackBtn" aria-label="Go back">
+        <!-- Center group: rewind / big play-pause / forward -->
+        <div class="phone-center-controls">
 
-            <span class="material-symbols-rounded">
-              arrow_back
+          <!-- Rewind 10 -->
+          <button type="button" class="phone-skip-btn phone-rewind-btn" id="phoneRewind10Btn"
+            aria-label="Rewind 10 seconds">
+
+            <img src="/watch/assets/rewind10.svg">
+
+          </button>
+
+
+          <!-- Big play / pause -->
+          <button type="button" class="phone-play-btn" id="phonePlayPause" aria-label="Play" aria-pressed="false">
+
+            <span class="material-symbols-outlined" id="phonePlayIcon">
+              play_arrow
             </span>
 
           </button>
 
-          <!-- Center group: rewind / big play-pause / forward -->
-          <div class="phone-center-controls">
 
-            <!-- Rewind 10 -->
-            <button type="button" class="phone-skip-btn phone-rewind-btn" id="phoneRewind10Btn"
-              aria-label="Rewind 10 seconds">
+          <!-- Forward 10 -->
+          <button type="button" class="phone-skip-btn phone-forward-btn" id="phoneForward10Btn"
+            aria-label="Forward 10 seconds">
 
-              <img src="/watch/assets/rewind10.svg">
+            <img src="/watch/assets/forward10.svg">
 
-            </button>
+          </button>
 
+        </div>
+      </div>
+      <div class="controls" id="controls" aria-hidden="false">
+        <div class="progress-times" id="progressTimes">
+          <span class="progress-time" id="currentTime">0:00</span>
+          <span class="progress-time" id="totalTime">- 0:00</span>
+        </div>
 
-            <!-- Big play / pause -->
-            <button type="button" class="phone-play-btn" id="phonePlayPause" aria-label="Play" aria-pressed="false">
-
-              <span class="material-symbols-outlined" id="phonePlayIcon">
-                play_arrow
-              </span>
-
-            </button>
-
-
-            <!-- Forward 10 -->
-            <button type="button" class="phone-skip-btn phone-forward-btn" id="phoneForward10Btn"
-              aria-label="Forward 10 seconds">
-
-              <img src="/watch/assets/forward10.svg">
-
-            </button>
-
+        <div class="vod-progress" id="vodProgress" aria-hidden="false">
+          <div class="progress-wrap" id="progressWrap" role="slider" aria-label="Video progress" aria-valuemin="0"
+            aria-valuemax="100" aria-valuenow="0" tabindex="0">
+            <div class="progress-track">
+              <div class="progress-buffer" id="progressBuffer"></div>
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-thumb" id="progressThumb"></div>
+            <div class="progress-preview" id="progressPreview" aria-hidden="true">
+              <div class="preview-thumb-box" id="previewThumbBox"></div>
+              <div class="preview-time" id="previewTime">0:00</div>
+            </div>
           </div>
         </div>
-      <div class="controls" id="controls" aria-hidden="false">
-        <div class="vod-progress" id="vodProgress" aria-hidden="false">
-            <div class="progress-wrap" id="progressWrap" role="slider" aria-label="Video progress" aria-valuemin="0"
-              aria-valuemax="100" aria-valuenow="0" tabindex="0">
-              <div class="progress-track">
-                <div class="progress-buffer" id="progressBuffer"></div>
-                <div class="progress-fill" id="progressFill"></div>
-              </div>
-              <div class="progress-thumb" id="progressThumb"></div>
-              <div class="progress-preview" id="progressPreview" aria-hidden="true">
-                <div class="preview-thumb-box" id="previewThumbBox"></div>
-                <div class="preview-time" id="previewTime">0:00</div>
+        <div class="controls-row">
+          <div class="left-group">
+            <button class="btn hidden lg:inline-flex play-btn" id="playPause" aria-pressed="false">
+              <span class="material-symbols-rounded" id="playIcon">play_arrow</span>
+            </button>
+            <button class="btn hidden lg:inline-flex" id="rewind10btn" aria-pressed="false">
+              <span class="material-symbols-outlined">replay_10</span>
+            </button>
+            <button class="btn hidden lg:inline-flex" id="forward10btn" aria-pressed="false">
+              <span class="material-symbols-outlined">forward_10</span>
+            </button>
+            <div class="volume-container" id="volumeContainer">
+              <button class="btn inline-flex small-btn" id="volumeBtn"><span class="icon"
+                  id="volumeIcon">volume_up</span></button>
+              <div class="volume-popup"><input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1" />
               </div>
             </div>
           </div>
-          <div class="controls-row">
-            <div class="left-group">
-              <button class="btn hidden lg:inline-flex play-btn" id="playPause" aria-pressed="false">
-                <span class="material-symbols-outlined" id="playIcon">play_arrow</span>
+          <div class="right-group">
+            <button class="btn inline-flex" id="subtitlesBtn" aria-label="Toggle English subtitles"
+              aria-pressed="false">
+              <span class="material-symbols-outlined">closed_caption</span>
+            </button>
+
+            <div class="settings-wrap">
+              <button class="btn inline-flex" id="settingsBtn" aria-label="Settings" aria-expanded="false">
+                <span class="material-symbols-outlined">settings</span>
               </button>
-              <button class="btn hidden lg:inline-flex" id="rewind10btn" aria-pressed="false">
-                <span class="material-symbols-outlined">replay_10</span>
-              </button>
-              <button class="btn hidden lg:inline-flex" id="forward10btn" aria-pressed="false">
-                <span class="material-symbols-outlined">forward_10</span>
-              </button>
-              <div class="volume-container" id="volumeContainer">
-                <button class="btn inline-flex small-btn" id="volumeBtn"><span class="icon"
-                    id="volumeIcon">volume_up</span></button>
-                <div class="volume-popup"><input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1" />
+
+              <div class="settings-menu scale-[0.7] origin-bottom-right lg:scale-100" id="settingsMenu">
+
+                <!-- ── Tab Bar ── -->
+                <div class="settings-tabs" id="settingsTabs">
+                  <button class="settings-tab active" data-tab="playback">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                      <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                    Playback
+                  </button>
+                  <button class="settings-tab" data-tab="captions">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="5" width="20" height="14" rx="2" />
+                      <path d="M6 10h4M6 14h8M14 10h4" />
+                    </svg>
+                    Captions
+                  </button>
                 </div>
-              </div>
-              <span class="remaining-time" id="remainingTime">0:00 / 0:00</span>
-            </div>
-            <div class="right-group">
-              <button class="btn inline-flex" id="subtitlesBtn" aria-label="Toggle English subtitles"
-                aria-pressed="false">
-                <span class="material-symbols-outlined">closed_caption</span>
-              </button>
 
-              <div class="settings-wrap">
-                <button class="btn inline-flex" id="settingsBtn" aria-label="Settings" aria-expanded="false">
-                  <span class="material-symbols-outlined">settings</span>
-                </button>
+                <div class="settings-panels">
 
-                <div class="settings-menu scale-[0.7] origin-bottom-right lg:scale-100" id="settingsMenu">
+                  <!-- ══ PLAYBACK TAB ══ -->
+                  <div class="settings-panel active" id="panel-playback">
+                    <span class="s-label">Speed</span>
+                    <div class="s-chips" id="speedOptions">
+                      <button class="s-chip" data-speed="0.5">0.5×</button>
+                      <button class="s-chip" data-speed="0.75">0.75×</button>
+                      <button class="s-chip active" data-speed="1">1×</button>
+                      <button class="s-chip" data-speed="1.25">1.25×</button>
+                      <button class="s-chip" data-speed="1.5">1.5×</button>
+                      <button class="s-chip" data-speed="2">2×</button>
+                    </div>
 
-                  <!-- ── Tab Bar ── -->
-                  <div class="settings-tabs" id="settingsTabs">
-                    <button class="settings-tab active" data-tab="playback">
-                      <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <polygon points="5 3 19 12 5 21 5 3" />
-                      </svg>
-                      Playback
-                    </button>
-                    <button class="settings-tab" data-tab="captions">
-                      <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="5" width="20" height="14" rx="2" />
-                        <path d="M6 10h4M6 14h8M14 10h4" />
-                      </svg>
-                      Captions
-                    </button>
+                    <span class="s-label">Resolution</span>
+                    <div class="s-chips" id="qualityOptions">
+                      <button class="s-chip active" data-quality="-1">Auto</button>
+                    </div>
+
+                    <div class="s-divider"></div>
+
+                    <div class="caption-control" style="padding: 4px 8px 6px; margin-top: 12px;">
+                      <label>
+                        Server
+                        <span class="setting-readout" id="serverValue">Alpha</span>
+                      </label>
+
+                      <div class="dyn-menu-wrap" id="serverWrap">
+                        <button type="button" class="dyn-dropdown" id="serverBtn"
+                          onclick="toggleDropdownMenu('serverMenu')">
+                          <span id="serverTitle">Alpha</span>
+                          <span class="dyn-chevron">
+                            <i data-feather="chevron-down"></i>
+                          </span>
+                        </button>
+
+                        <div class="dyn-menu" id="serverMenu"></div>
+                      </div>
+                    </div>
+
+
+                    <!-- Stream selector -->
+                    <div class="caption-control" id="streamControl" style="padding: 4px 8px 6px; margin-top: 12px;">
+                      <label>
+                        Stream
+                        <span class="setting-readout" id="streamValue">Stream 1</span>
+                      </label>
+
+                      <div class="dyn-menu-wrap" id="streamWrap">
+                        <button type="button" class="dyn-dropdown" id="streamBtn"
+                          onclick="toggleDropdownMenu('streamMenu')">
+                          <span id="streamTitle">Stream 1</span>
+
+                          <span class="dyn-chevron">
+                            <i data-feather="chevron-down"></i>
+                          </span>
+                        </button>
+
+                        <div class="dyn-menu" id="streamMenu"></div>
+                      </div>
+                    </div>
                   </div>
 
-                  <div class="settings-panels">
+                  <!-- ══ CAPTIONS TAB ══ -->
+                  <div class="settings-panel" id="panel-captions">
+                    <div class="caption-controls">
 
-                    <!-- ══ PLAYBACK TAB ══ -->
-                    <div class="settings-panel active" id="panel-playback">
-                      <span class="s-label">Speed</span>
-                      <div class="s-chips" id="speedOptions">
-                        <button class="s-chip" data-speed="0.5">0.5×</button>
-                        <button class="s-chip" data-speed="0.75">0.75×</button>
-                        <button class="s-chip active" data-speed="1">1×</button>
-                        <button class="s-chip" data-speed="1.25">1.25×</button>
-                        <button class="s-chip" data-speed="1.5">1.5×</button>
-                        <button class="s-chip" data-speed="2">2×</button>
+                      <!-- Language -->
+                      <div class="caption-control">
+                        <label>
+                          Language
+                          <span class="setting-readout" id="captionLanguageValue">Off</span>
+                        </label>
+                        <div class="dyn-menu-wrap" id="captionLanguageWrap">
+                          <button type="button" class="dyn-dropdown" id="captionLanguageBtn"
+                            onclick="toggleDropdownMenu('captionLanguageMenu')">
+                            <span id="captionLanguageTitle">Off</span>
+                            <span class="dyn-chevron"><i data-feather="chevron-down"></i></span>
+                          </button>
+                          <div class="dyn-menu" id="captionLanguageMenu"></div>
+                        </div>
+                        <span class="caption-link">
+                          Not synced?
+                          <a id="captionSyncLink">Fix timing</a>
+                        </span>
                       </div>
 
-                      <span class="s-label">Resolution</span>
-                      <div class="s-chips" id="qualityOptions">
-                        <button class="s-chip active" data-quality="-1">Auto</button>
+                      <!-- Sync (hidden by default) -->
+                      <div class="caption-control" id="captionSyncContainer" style="display:none">
+                        <label>
+                          Captions offset
+                          <span class="setting-readout" id="captionSyncValue">0s</span>
+                        </label>
+                        <div class="s-sync-row">
+                          <button class="s-sync-btn" id="captionSyncLeft">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                              <polyline points="15 18 9 12 15 6" />
+                            </svg>
+                          </button>
+                          <input id="captionSync" type="range" min="-30" max="30" step="0.1" value="0">
+                          <button class="s-sync-btn" id="captionSyncRight">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                              <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                          </button>
+                        </div>
+                        <a id="captionSyncReset"><i data-lucide="rotate-ccw" style="width: 12px; height: 12px;"></i>
+                          Reset</a>
                       </div>
 
                       <div class="s-divider"></div>
 
-                      <div class="caption-control" style="padding: 4px 8px 6px; margin-top: 12px;">
+                      <!-- Font Size -->
+                      <div class="caption-control">
                         <label>
-                          Server
-                          <span class="setting-readout" id="serverValue">Alpha</span>
+                          Font size
+                          <span class="setting-readout" id="captionFontSizeValue">100%</span>
                         </label>
-
-                        <div class="dyn-menu-wrap" id="serverWrap">
-                          <button type="button" class="dyn-dropdown" id="serverBtn"
-                            onclick="toggleDropdownMenu('serverMenu')">
-                            <span id="serverTitle">Alpha</span>
-                            <span class="dyn-chevron">
-                              <i data-feather="chevron-down"></i>
-                            </span>
-                          </button>
-
-                          <div class="dyn-menu" id="serverMenu"></div>
-                        </div>
+                        <input id="captionFontSize" type="range" min="50" max="200" step="5" value="100">
                       </div>
 
-
-                      <!-- Stream selector -->
-                      <div class="caption-control" id="streamControl" style="padding: 4px 8px 6px; margin-top: 12px;">
+                      <!-- Font Weight -->
+                      <div class="caption-control">
                         <label>
-                          Stream
-                          <span class="setting-readout" id="streamValue">Stream 1</span>
+                          Font weight
+                          <span class="setting-readout" id="captionFontWeightValue">Medium</span>
                         </label>
-
-                        <div class="dyn-menu-wrap" id="streamWrap">
-                          <button type="button" class="dyn-dropdown" id="streamBtn"
-                            onclick="toggleDropdownMenu('streamMenu')">
-                            <span id="streamTitle">Stream 1</span>
-
-                            <span class="dyn-chevron">
-                              <i data-feather="chevron-down"></i>
-                            </span>
+                        <div class="dyn-menu-wrap" id="captionFontWeightWrap">
+                          <button type="button" class="dyn-dropdown"
+                            onclick="toggleDropdownMenu('captionFontWeightMenu')">
+                            <span id="captionFontWeightTitle">Medium</span>
+                            <span class="dyn-chevron"><i data-feather="chevron-down"></i></span>
                           </button>
-
-                          <div class="dyn-menu" id="streamMenu"></div>
+                          <div class="dyn-menu" id="captionFontWeightMenu">
+                            <button type="button" class="dyn-item" style="font-weight: 400;" data-value="400"
+                              onclick="selectFontWeight('400','Regular')">Regular <span class="dyn-check"><i
+                                  data-feather="check"></i></span></button>
+                            <button type="button" class="dyn-item active" style="font-weight: 500;" data-value="500"
+                              onclick="selectFontWeight('500','Medium')">Medium <span class="dyn-check"><i
+                                  data-feather="check"></i></span></button>
+                            <button type="button" class="dyn-item" style="font-weight: 600;" data-value="600"
+                              onclick="selectFontWeight('600','Semi Bold')">Semi Bold <span class="dyn-check"><i
+                                  data-feather="check"></i></span></button>
+                            <button type="button" class="dyn-item" style="font-weight: 700;" data-value="700"
+                              onclick="selectFontWeight('700','Bold')">Bold <span class="dyn-check"><i
+                                  data-feather="check"></i></span></button>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <!-- ══ CAPTIONS TAB ══ -->
-                    <div class="settings-panel" id="panel-captions">
-                      <div class="caption-controls">
-
-                        <!-- Language -->
-                        <div class="caption-control">
-                          <label>
-                            Language
-                            <span class="setting-readout" id="captionLanguageValue">Off</span>
-                          </label>
-                          <div class="dyn-menu-wrap" id="captionLanguageWrap">
-                            <button type="button" class="dyn-dropdown" id="captionLanguageBtn"
-                              onclick="toggleDropdownMenu('captionLanguageMenu')">
-                              <span id="captionLanguageTitle">Off</span>
-                              <span class="dyn-chevron"><i data-feather="chevron-down"></i></span>
-                            </button>
-                            <div class="dyn-menu" id="captionLanguageMenu"></div>
-                          </div>
-                          <span class="caption-link">
-                            Not synced?
-                            <a id="captionSyncLink">Fix timing</a>
-                          </span>
-                        </div>
-
-                        <!-- Sync (hidden by default) -->
-                        <div class="caption-control" id="captionSyncContainer" style="display:none">
-                          <label>
-                            Captions offset
-                            <span class="setting-readout" id="captionSyncValue">0s</span>
-                          </label>
-                          <div class="s-sync-row">
-                            <button class="s-sync-btn" id="captionSyncLeft">
-                              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="15 18 9 12 15 6" />
-                              </svg>
-                            </button>
-                            <input id="captionSync" type="range" min="-30" max="30" step="0.1" value="0">
-                            <button class="s-sync-btn" id="captionSyncRight">
-                              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6" />
-                              </svg>
-                            </button>
-                          </div>
-                          <a id="captionSyncReset"><i data-lucide="rotate-ccw" style="width: 12px; height: 12px;"></i>
-                            Reset</a>
-                        </div>
-
-                        <div class="s-divider"></div>
-
-                        <!-- Font Size -->
-                        <div class="caption-control">
-                          <label>
-                            Font size
-                            <span class="setting-readout" id="captionFontSizeValue">100%</span>
-                          </label>
-                          <input id="captionFontSize" type="range" min="50" max="200" step="5" value="100">
-                        </div>
-
-                        <!-- Font Weight -->
-                        <div class="caption-control">
-                          <label>
-                            Font weight
-                            <span class="setting-readout" id="captionFontWeightValue">Medium</span>
-                          </label>
-                          <div class="dyn-menu-wrap" id="captionFontWeightWrap">
-                            <button type="button" class="dyn-dropdown"
-                              onclick="toggleDropdownMenu('captionFontWeightMenu')">
-                              <span id="captionFontWeightTitle">Medium</span>
-                              <span class="dyn-chevron"><i data-feather="chevron-down"></i></span>
-                            </button>
-                            <div class="dyn-menu" id="captionFontWeightMenu">
-                              <button type="button" class="dyn-item" style="font-weight: 400;" data-value="400"
-                                onclick="selectFontWeight('400','Regular')">Regular <span class="dyn-check"><i
-                                    data-feather="check"></i></span></button>
-                              <button type="button" class="dyn-item active" style="font-weight: 500;" data-value="500"
-                                onclick="selectFontWeight('500','Medium')">Medium <span class="dyn-check"><i
-                                    data-feather="check"></i></span></button>
-                              <button type="button" class="dyn-item" style="font-weight: 600;" data-value="600"
-                                onclick="selectFontWeight('600','Semi Bold')">Semi Bold <span class="dyn-check"><i
-                                    data-feather="check"></i></span></button>
-                              <button type="button" class="dyn-item" style="font-weight: 700;" data-value="700"
-                                onclick="selectFontWeight('700','Bold')">Bold <span class="dyn-check"><i
-                                    data-feather="check"></i></span></button>
-                            </div>
+                      <!-- Font Family -->
+                      <div class="caption-control">
+                        <label>
+                          Font family
+                          <span class="setting-readout" id="captionFontFamilyValue">Geist</span>
+                        </label>
+                        <div class="dyn-menu-wrap" id="captionFontFamilyWrap">
+                          <button type="button" class="dyn-dropdown"
+                            onclick="toggleDropdownMenu('captionFontFamilyMenu')">
+                            <span id="captionFontFamilyTitle">Geist</span>
+                            <span class="dyn-chevron"><i data-feather="chevron-down"></i></span>
+                          </button>
+                          <div class="dyn-menu" id="captionFontFamilyMenu">
+                            <button class="dyn-item" style="font-family: 'Arimo';" data-value="Arimo"
+                              onclick="selectFontFamily('Arimo')">Arimo <span class="dyn-check"><i
+                                  data-feather="check"></i></span></button>
+                            <button class="dyn-item active" style="font-family: 'Geist';" data-value="Geist"
+                              onclick="selectFontFamily('Geist')">Geist
+                              <span class="dyn-check"><i data-feather="check"></i></span></button>
+                            <button class="dyn-item" style="font-family: 'Geist Mono';" data-value="Geist Mono"
+                              onclick="selectFontFamily('Geist Mono')">Geist Mono <span class="dyn-check"><i
+                                  data-feather="check"></i></span></button>
+                            <button class="dyn-item" style="font-family: 'Inter';" data-value="Inter"
+                              onclick="selectFontFamily('Inter')">Inter <span class="dyn-check"><i
+                                  data-feather="check"></i></span></button>
+                            <button class="dyn-item" style="font-family: 'Montserrat';" data-value="Montserrat"
+                              onclick="selectFontFamily('Montserrat')">Montserrat <span class="dyn-check"><i
+                                  data-feather="check"></i></span></button>
+                            <button class="dyn-item" style="font-family: 'Oswald';" data-value="Oswald"
+                              onclick="selectFontFamily('Oswald')">Oswald <span class="dyn-check"><i
+                                  data-feather="check"></i></span></button>
+                            <button class="dyn-item" style="font-family: 'DM Sans';" data-value="DM Sans"
+                              onclick="selectFontFamily('DM Sans')">DM Sans <span class="dyn-check"><i
+                                  data-feather="check"></i></span></button>
                           </div>
                         </div>
-
-                        <!-- Font Family -->
-                        <div class="caption-control">
-                          <label>
-                            Font family
-                            <span class="setting-readout" id="captionFontFamilyValue">Geist</span>
-                          </label>
-                          <div class="dyn-menu-wrap" id="captionFontFamilyWrap">
-                            <button type="button" class="dyn-dropdown"
-                              onclick="toggleDropdownMenu('captionFontFamilyMenu')">
-                              <span id="captionFontFamilyTitle">Geist</span>
-                              <span class="dyn-chevron"><i data-feather="chevron-down"></i></span>
-                            </button>
-                            <div class="dyn-menu" id="captionFontFamilyMenu">
-                              <button class="dyn-item" style="font-family: 'Arimo';" data-value="Arimo"
-                                onclick="selectFontFamily('Arimo')">Arimo <span class="dyn-check"><i
-                                    data-feather="check"></i></span></button>
-                              <button class="dyn-item active" style="font-family: 'Geist';" data-value="Geist"
-                                onclick="selectFontFamily('Geist')">Geist
-                                <span class="dyn-check"><i data-feather="check"></i></span></button>
-                              <button class="dyn-item" style="font-family: 'Geist Mono';" data-value="Geist Mono"
-                                onclick="selectFontFamily('Geist Mono')">Geist Mono <span class="dyn-check"><i
-                                    data-feather="check"></i></span></button>
-                              <button class="dyn-item" style="font-family: 'Inter';" data-value="Inter"
-                                onclick="selectFontFamily('Inter')">Inter <span class="dyn-check"><i
-                                    data-feather="check"></i></span></button>
-                              <button class="dyn-item" style="font-family: 'Montserrat';" data-value="Montserrat"
-                                onclick="selectFontFamily('Montserrat')">Montserrat <span class="dyn-check"><i
-                                    data-feather="check"></i></span></button>
-                              <button class="dyn-item" style="font-family: 'Oswald';" data-value="Oswald"
-                                onclick="selectFontFamily('Oswald')">Oswald <span class="dyn-check"><i
-                                    data-feather="check"></i></span></button>
-                              <button class="dyn-item" style="font-family: 'DM Sans';" data-value="DM Sans"
-                                onclick="selectFontFamily('DM Sans')">DM Sans <span class="dyn-check"><i
-                                    data-feather="check"></i></span></button>
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- Background Opacity -->
-                        <div class="caption-control">
-                          <label>
-                            Background opacity
-                            <span class="setting-readout" id="captionBgOpacityValue">0%</span>
-                          </label>
-                          <input id="captionBgOpacity" type="range" min="0" max="90" step="5" value="0">
-                        </div>
-
                       </div>
-                    </div>
-                    <!-- /captions panel -->
 
-                  </div><!-- /settings-panels -->
-                </div><!-- /settings-menu -->
-              </div><!-- /settings-wrap -->
-              <button class="btn hidden lg:inline-flex" id="pipBtn"><span class="material-symbols-outlined"
-                  id="pipIcon">pip</span></button>
-              <button class="btn inline-flex fs-Btn" id="fsBtn"><span class="icon"
-                  id="fsIcon">fullscreen</span></button>
-            </div>
+                      <!-- Background Opacity -->
+                      <div class="caption-control">
+                        <label>
+                          Background opacity
+                          <span class="setting-readout" id="captionBgOpacityValue">0%</span>
+                        </label>
+                        <input id="captionBgOpacity" type="range" min="0" max="90" step="5" value="0">
+                      </div>
+
+                    </div>
+                  </div>
+                  <!-- /captions panel -->
+
+                </div><!-- /settings-panels -->
+              </div><!-- /settings-menu -->
+            </div><!-- /settings-wrap -->
+            <button class="btn hidden lg:inline-flex" id="pipBtn"><span class="material-symbols-outlined"
+                id="pipIcon">pip</span></button>
+            <button class="btn inline-flex fs-Btn" id="fsBtn"><span class="icon" id="fsIcon">fullscreen</span></button>
           </div>
         </div>
-        <div id="1.5xSpeed" class="speedToast" role="status" aria-live="polite"><i data-feather="fast-forward"
-            style="margin-right:6px;" fill="currentColor" width="14" height="14"></i> 1.5×</div>
-        <div id="toast" class="toast" role="status" aria-live="polite"></div>
       </div>
-    </div><!-- /#app-wrapper -->
+      <div id="1.5xSpeed" class="speedToast" role="status" aria-live="polite"><i data-feather="fast-forward"
+          style="margin-right:6px;" fill="currentColor" width="14" height="14"></i> 1.5×</div>
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </div>
+  </div><!-- /#app-wrapper -->
 
-    <!-- script2 first (injects drawer DOM + Episodes button, calls initDrawer) -->
-    <script src="/watch/script3.js"></script>
-    <script src="/watch/script2.js"></script>
-    <script src="/watch/script.js"></script>
-    <script src="/watch/script_mobile.js"></script>
+  <!-- script2 first (injects drawer DOM + Episodes button, calls initDrawer) -->
+  <script src="/watch/script3.js"></script>
+  <script src="/watch/script2.js"></script>
+  <script src="/watch/script.js"></script>
+  <script src="/watch/script_mobile.js"></script>
 </body>
 
 </html>

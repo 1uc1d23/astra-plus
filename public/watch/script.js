@@ -74,7 +74,9 @@ window.MEDIA_INFO = {
     const progressThumb = document.getElementById('progressThumb');
     const progressPreview = document.getElementById('progressPreview');
     const previewTime = document.getElementById('previewTime');
-    const remainingTime = document.getElementById('remainingTime');
+    const currentTime = document.getElementById('currentTime');
+    const BackBtn = document.getElementById('backBtn');
+    const totalTime = document.getElementById('totalTime');
     const subtitleOverlay = document.getElementById('subtitleOverlay');
     const episodeActions = document.getElementById('episodeActions');
     const skipIntroBtn = document.getElementById('skipIntroBtn');
@@ -1534,7 +1536,8 @@ window.MEDIA_INFO = {
         progressFill.style.width = `${progress}%`;
         progressBuffer.style.width = `${buffered}%`;
         progressThumb.style.left = `${progress}%`;
-        remainingTime.innerHTML = `<span style="color:white;">${formatTime(current)}</span> / ${formatTime(duration)}${episodeTitle ? ` &nbsp;&nbsp;&bull;&nbsp;&nbsp; ${episodeTitle}` : ''}`;
+        currentTime.textContent = formatTime(current);
+        totalTime.textContent = '- ' + formatTime(duration - current);
         progressWrap.setAttribute('aria-valuenow', String(Math.round(progress)));
         progressWrap.setAttribute('aria-valuetext', `${formatTime(current)} of ${formatTime(duration)}`);
         updateEpisodeActions();
@@ -1547,7 +1550,8 @@ window.MEDIA_INFO = {
         const progress = (current / duration) * 100;
         progressFill.style.width = `${progress}%`;
         progressThumb.style.left = `${progress}%`;
-        remainingTime.innerHTML = `<span style="color:white;">${formatTime(current)}</span> / ${formatTime(duration)}${episodeTitle ? ` &nbsp;&nbsp;&bull;&nbsp;&nbsp; ${episodeTitle}` : ''}`;
+        currentTime.textContent = formatTime(current);
+        totalTime.textContent = '- ' + formatTime(duration - current);
     }
 
     function isInMarkerWindow(marker, current, duration) {
@@ -2034,6 +2038,7 @@ window.MEDIA_INFO = {
     function syncChannelOverlay(state) {
         channelOverlay.style.display = '';
         channelOverlay.style.opacity = state;
+        BackBtn.style.display = state ? 'flex' : 'none';
     }
 
     const netflixPauseOverlay = document.getElementById('netflixPauseOverlay');

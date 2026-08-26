@@ -15,14 +15,14 @@
             return;
         }
 
-        const phoneBackBtn = document.getElementById('phoneBackBtn');
+        const BackBtn = document.getElementById('backBtn');
         const phonePlayPause = document.getElementById('phonePlayPause');
         const phoneRewind10Btn = document.getElementById('phoneRewind10Btn');
         const phoneForward10Btn = document.getElementById('phoneForward10Btn');
 
         // ── Back button (top-left, only shown on phones) ──
-        if (phoneBackBtn) {
-            phoneBackBtn.addEventListener('click', (e) => {
+        if (BackBtn) {
+            BackBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (window.history.length > 1) {
                     window.history.back();

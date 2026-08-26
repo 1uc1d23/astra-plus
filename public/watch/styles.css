@@ -329,17 +329,28 @@ video::-webkit-media-controls {
     margin-left: auto;
 }
 
-.remaining-time {
-    min-width: 86px;
-    color: #c5c5c5;
-    font-size: 14px;
-    cursor: default;
-    font-weight: 400;
+.progress-times {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+#totalTime {text-align: right;}
+
+.progress-time {
+    flex: 0 0 auto;
+    min-width: 42px;
+    color: #e3e3e3;
+    font-size: 13px;
     font-variant-numeric: tabular-nums;
-    opacity: .88;
-    text-align: left;
+    opacity: .9;
     white-space: nowrap;
-    transition: transform .18s ease, opacity .18s ease;
+    cursor: default;
+}
+.progress-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 0;
 }
 
 .btn {
@@ -1066,7 +1077,7 @@ video::-webkit-media-controls {
 .netflix-shadow {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, .5);
+    background: rgba(0, 0, 0, .6);
 }
 
 .netflix-content {
@@ -1153,7 +1164,7 @@ video::-webkit-media-controls {
 }
 
 /* BACK */
-.phone-back-btn {
+.back-btn {
     position: absolute !important;
     top: 16px !important;
     left: 16px !important;
@@ -1161,7 +1172,6 @@ video::-webkit-media-controls {
     width: 40px !important;
     height: 40px !important;
 
-    display: flex !important;
     align-items: center !important;
     justify-content: center !important;
 
@@ -1177,7 +1187,7 @@ video::-webkit-media-controls {
     z-index: 30 !important;
 }
 
-.phone-back-btn .material-symbols-rounded {
+.back-btn .material-symbols-rounded {
     font-size: 22px !important;
 }
 
