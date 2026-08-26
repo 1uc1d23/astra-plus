@@ -244,18 +244,14 @@ video::-webkit-media-controls {
     position: absolute;
     left: 0;
     top: 0;
+    background: var(--accent);
     height: 100%;
     width: 0%;
-    border-radius: inherit;
     pointer-events: none;
 }
 
 .progress-buffer {
     background: rgba(255, 255, 255, 0.2);
-}
-
-.progress-fill {
-    background: var(--accent);
 }
 
 .progress-wrap:hover .progress-thumb,
@@ -1058,7 +1054,7 @@ video::-webkit-media-controls {
     align-items: center;
     pointer-events: none;
     opacity: 0;
-    transition: .25s;
+    transition: all 250ms ease;
     z-index: 10;
 }
 
@@ -1070,7 +1066,7 @@ video::-webkit-media-controls {
 .netflix-shadow {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, .7);
+    background: rgba(0, 0, 0, .5);
 }
 
 .netflix-content {
@@ -2015,7 +2011,6 @@ video::-webkit-media-controls {
 /* Currently watching highlight */
 .ep-item--current {
     background: rgba(255,255,255,0.04);
-    border-left: 2px solid var(--accent);
     padding-left: 16px; /* compensate for the border */
 }
 
@@ -2065,24 +2060,21 @@ video::-webkit-media-controls {
     pointer-events: none;
 }
 
-.ep-watch-progress::before {
+.ep-watch-progress-clip {
     content: '';
     position: absolute;
     left: 6px;
     right: 6px;
     bottom: 6px;
     height: 3px;
-    background: rgba(198, 198, 198, 0.2);
+    background: rgba(198, 198, 198, 0.5);
     border-radius: 999px;
+    overflow: hidden
 }
 
 .ep-watch-progress-fill {
-    position: absolute;
-    left: 6px;
-    bottom: 6px;
     height: 3px;
     background: var(--accent);
-    border-radius: 999px;
     width: calc(var(--progress-width, 0%) - 12px) !important; 
 }
 
@@ -2150,7 +2142,7 @@ video::-webkit-media-controls {
 .ep-meta {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: wrap;
 }
 
@@ -2167,13 +2159,6 @@ video::-webkit-media-controls {
     color: oklch(65% .01 260);
     opacity: 0.6;
     letter-spacing: 0.02em;
-}
-
-.ep-runtime::before {
-    content: '-';
-    color: oklch(65% .01 260);
-    margin-right: 8px;
-    opacity: 0.24;
 }
 
 .ep-watching-badge {

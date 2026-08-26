@@ -39,7 +39,8 @@
     function getEpisodeWatchPercent(ep, season, isCurrent) {
         if (isCurrent || !window.TMDB_ID) return 0;
 
-        const watchedSeconds = Number(localStorage.getItem(resumeKeyForEpisode(season, ep.episode_number)));
+        const saved = localStorage.getItem(resumeKeyForEpisode(season, ep.episode_number));
+        const watchedSeconds = saved ? Number(JSON.parse(saved).progress) : 0;
         const durationSeconds = Number(ep.runtime || 0) * 60;
 
         const isPastEpisode = season < _currentSeason
@@ -104,7 +105,7 @@
 
         const active = seasons.find(s => s.season_number === activeSeason) || seasons[0];
         if (title) title.textContent = active ? `Season ${active.season_number}` : 'Season';
-        
+
         // Dynamically update only the text next to the icon
         if (mainTitleText && active) {
             mainTitleText.textContent = `S${active.season_number}: ${active.name || 'Season ' + active.season_number}`;
@@ -170,7 +171,9 @@
           </div>` : ''}
           ${watchedPercent ? `
           <div class="ep-watch-progress" aria-hidden="true">
-            <div class="ep-watch-progress-fill" style="--progress-width: ${watchedPercent.toFixed(2)}%; width: calc(${watchedPercent.toFixed(2)}% - 12px);"></div>
+            <div class="ep-watch-progress-clip">
+                <div class="ep-watch-progress-fill" style="--progress-width: ${watchedPercent.toFixed(2)}%; width: calc(${watchedPercent.toFixed(2)}% - 12px);"></div>
+            </div>
           </div>` : ''}
         </div>
         <div class="ep-info">
@@ -353,7 +356,7 @@
         // Close season menu on outside click
         document.addEventListener('click', e => {
             const wrap = document.getElementById('ep-season-wrap');
-            if (wrap && !wrap.contains(e.target)) wrap.classList.remove('remove');
+            if (wrap && !wrap.contains(e.target)) wrap.classList.remove('open');
         });
     }
 
