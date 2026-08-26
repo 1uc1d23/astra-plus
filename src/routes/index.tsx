@@ -55,7 +55,7 @@ function ProviderRow({
   const dropdownLabel = (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <button className="flex items-center gap-2 text-lg md:text-xl font-semibold tracking-tight hover:opacity-80 transition focus:outline-none cursor-pointer">
+        <button className="flex items-center gap-2 text-lg md:text-xl font-semibold hover:opacity-80 transition focus:outline-none cursor-pointer">
           <span>{type === "movie" ? "Movies on" : "Series on"}</span>
           <span className="underline decoration-accent underline-offset-4 text-white">
             {provider.provider_name}
@@ -195,7 +195,7 @@ function Home() {
         <Row label="Trending Now" items={trending.data?.results} onOpen={openDetail} size="lg" />
         <ProviderRow type="movie" onOpen={openDetail} />
         <ProviderRow type="tv" onOpen={openDetail} />
-        <Row label="Now Playing" items={nowPlaying.data?.results} onOpen={openDetail} />
+        <Row label="In Theaters" items={nowPlaying.data?.results} onOpen={openDetail} />
         <Row label="New Releases" items={upcoming.data?.results} onOpen={openDetail} />
       </div>
 

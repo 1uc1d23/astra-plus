@@ -133,14 +133,14 @@ export function MovieCard({
 
       <div className="mt-2 px-0.5">
         <div className="line-clamp-1 text-sm font-medium">{title(media)}</div>
-        <div className="text-mono truncate text-[11px] text-muted-foreground">
+        <div className="truncate text-[11px] text-muted-foreground">
           {media._lastSeason && media._lastEpisode ? (
             <span className="text-accent font-semibold">
               S{media._lastSeason} E{media._lastEpisode}
             </span>
           ) : (
             <>
-              {year(media) || "—"} · {tv ? "Series" : "Movie"}
+              {year(media) || "—"} <span className="mx-1 opacity-80">·</span> {tv ? "Series" : "Movie"}
             </>
           )}
         </div>
@@ -168,7 +168,7 @@ export function Row({
     });
 
   const btn = (right: boolean) =>
-    `absolute ${right ? "right-2" : "left-2"} top-1/2 z-50 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/70 text-white shadow-xl backdrop-blur-md transition md:grid ${hovered ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+    `absolute ${right ? "right-2" : "left-2"} top-1/2 z-50 hidden h-8 w-8 -translate-y-1/2 place-items-center rounded-full border border-[#ffffff1a] bg-[#1a1a1a70] shadow-xs hover:bg-accent hover:text-accent-foreground !backdrop-blur-lg transition md:grid ${hovered ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}"
     } hover:bg-white hover:text-black`;
 
   return (
@@ -226,126 +226,138 @@ export function Hero({ items, onOpen, onPlay }: { items: Media[]; onOpen: (m: Me
   if (!active) return <div className="h-[85vh] skeleton" />;
   const logo = englishLogo(detail || active);
   return (
-    <section className="relative h-[92vh] min-h-[560px] w-full overflow-hidden">
-  {list.map((m, i) => (
-    <div
-      key={m.id}
-      className={`absolute inset-0 transition-opacity duration-1000 ${
-        i === idx ? "opacity-100" : "opacity-0"
-      }`}
-    >
-      <img
-        src={IMG(m.backdrop_path, "original")}
-        alt=""
-        className="h-full w-full object-cover"
-      />
-    </div>
-  ))}
+    <section className="relative h-[92vh] min-h-[560px] w-full">
+      {list.map((m, i) => (
+        <div
+          key={m.id}
+          className={`absolute inset-0 transition-opacity duration-1000 ${i === idx ? "opacity-100" : "opacity-0"
+            }`}
+        >
+          <img
+            src={IMG(m.backdrop_path, "original")}
+            alt=""
+            className="z-0 h-full w-full object-cover
+    [mask-image:linear-gradient(#000_50%,#000c_55%,#0000004d_70%,#0000_100%)]"
+          />
+        </div>
+      ))}
 
-  <div className="absolute inset-x-0 bottom-0 h-1/2 backdrop-blur-md [mask-image:linear-gradient(to_top,black,transparent)]" />
-  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 via-[20%] to-transparent" />
+      <div
+  className="pointer-events-none absolute inset-x-0 top-[46vh] h-[92vh] overflow-hidden
+    [mask-image:linear-gradient(#0000_0%,#000_12%,#000000e6_48%,#00000059_76%,#0000_100%)]"
+>
+  <div className="absolute inset-[-8%] opacity-[0.24] md:opacity-[0.28]">
+    <img
+      src={IMG(list[idx].backdrop_path, "original")}
+      alt=""
+      className="h-full w-full scale-110 object-cover object-center
+        blur-[52px] saturate-[1.35] md:blur-[72px]"
+    />
+  </div>
 
-  <div className="relative z-10 flex h-full items-end md:items-center">
-    <div
-      key={active.id}
-      className="max-w-2xl px-6 md:px-12 pb-16 md:pb-0"
-    >
+  <div className="absolute inset-0 bg-black/20" />
+</div>
 
-      {!detail ? (
-        <div className="mb-6 h-16 md:h-24 w-64 md:w-96 rounded-2xl skeleton" />
-      ) : logo ? (
-        <img
-          src={IMG(logo.file_path, "w500")}
-          alt={title(active)}
-          className="mb-6 max-h-28 md:max-h-28 w-auto drop-shadow-[0_8px_20px_rgba(0,0,0,0.3)]"
-        />
-      ) : (
-        <h1 className="mb-6 text-4xl md:text-6xl font-bold tracking-tight">
-          {title(active)}
-        </h1>
-      )}
+      <div className="relative z-10 flex h-full items-end md:items-center">
+        <div
+          key={active.id}
+          className="max-w-2xl px-6 md:px-12 pb-16 md:pb-0"
+        >
 
-      <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1 text-xs">
-          <Star size={12} className="fill-accent stroke-accent" />
-          <span className="text-accent">{active.vote_average?.toFixed(1)}</span>
-          <span className="text-muted-foreground"> / 10</span>
-        </span>
+          {!detail ? (
+            <div className="mb-6 h-16 md:h-24 w-64 md:w-96 rounded-2xl skeleton" />
+          ) : logo ? (
+            <img
+              src={IMG(logo.file_path, "w500")}
+              alt={title(active)}
+              className="mb-6 max-h-28 md:max-h-28 w-auto drop-shadow-[0_8px_20px_rgba(0,0,0,0.3)]"
+            />
+          ) : (
+            <h1 className="mb-6 text-4xl md:text-6xl font-bold tracking-tight">
+              {title(active)}
+            </h1>
+          )}
 
-        <span>·</span>
+          <div className="mb-4 flex items-center gap-3 text-xs text-white/60 drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)]">
+            <span className="flex items-center gap-1 text-xs">
+              <Star size={12} className="fill-accent stroke-accent" />
+              <span className="text-accent">{active.vote_average?.toFixed(1)}</span>
+              <span className="text-white/60"> / 10</span>
+            </span>
 
-        <span className="inline-flex items-center gap-1">
-          <Calendar size={12} />
-          {year(active)}
-        </span>
-
-        {detail?.runtime ? (
-          <>
             <span>·</span>
+
             <span className="inline-flex items-center gap-1">
-              <Clock size={12} />
-              {formatRuntime(detail.runtime)}
+              <Calendar size={12} />
+              {year(active)}
             </span>
-          </>
-        ) : null}
 
-        {detail?.number_of_seasons ? (
-          <>
-            <span>·</span>
-            <span>{detail.number_of_seasons} Seasons</span>
-          </>
-        ) : null}
+            {detail?.runtime ? (
+              <>
+                <span>·</span>
+                <span className="inline-flex items-center gap-1">
+                  <Clock size={12} />
+                  {formatRuntime(detail.runtime)}
+                </span>
+              </>
+            ) : null}
 
-        {detail?._ageRating && (
-          <>
-            <span>·</span>
-            <span className="rounded-sm border border-white/15 px-2 py-0.5 text-[12px] uppercase">
-              {detail._ageRating}
-            </span>
-          </>
-        )}
+            {detail?.number_of_seasons ? (
+              <>
+                <span>·</span>
+                <span>{detail.number_of_seasons} {detail.number_of_seasons === 1 ? "Season" : "Seasons"}</span>
+              </>
+            ) : null}
+
+            {detail?._ageRating && (
+              <>
+                <span>·</span>
+                <span className="rounded-sm border border-white/15 px-2 py-0.5 text-[12px] uppercase">
+                  {detail._ageRating}
+                </span>
+              </>
+            )}
+          </div>
+
+          <p className="mb-8 line-clamp-2 max-w-xl text-sm md:text-base leading-relaxed text-white/60">
+            {active.overview}
+          </p>
+
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => onPlay(active)}
+              className="group inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-accent hover:text-accent-foreground hover:scale-105"
+            >
+              <Play size={16} className="fill-current" />
+              Play
+            </button>
+
+            <button
+              onClick={() => onOpen(active)}
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 backdrop-blur-md px-5 py-3 text-sm font-medium transition hover:bg-white/20 hover:scale-105"
+            >
+              <ArrowUp size={16} />
+              Expand
+            </button>
+          </div>
+        </div>
       </div>
 
-      <p className="mb-8 line-clamp-2 max-w-xl text-sm md:text-base leading-relaxed text-white/60">
-        {active.overview}
-      </p>
-
-      <div className="flex flex-wrap gap-3">
-        <button
-          onClick={() => onPlay(active)}
-          className="group inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-accent hover:text-accent-foreground hover:scale-105"
-        >
-          <Play size={16} className="fill-current" />
-          Play
-        </button>
-
-        <button
-          onClick={() => onOpen(active)}
-          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 backdrop-blur-md px-5 py-3 text-sm font-medium transition hover:bg-white/20 hover:scale-105"
-        >
-          <ArrowUp size={16} />
-          Expand
-        </button>
+      {/* Centered to the full hero/screen */}
+      <div className="absolute bottom-6 md:bottom-24 left-1/2 z-20 -translate-x-1/2 flex items-center justify-center gap-2">
+        {list.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setIdx(i)}
+            aria-label={`Go to slide ${i + 1}`}
+            className={`h-1.5 rounded-full transition-all duration-300 ${i === idx
+                ? "w-8 bg-white"
+                : "w-2 bg-white/35 hover:bg-white/60"
+              }`}
+          />
+        ))}
       </div>
-    </div>
-  </div>
-
-  {/* Centered to the full hero/screen */}
-  <div className="absolute bottom-6 md:bottom-24 left-1/2 z-20 -translate-x-1/2 flex items-center justify-center gap-2">
-    {list.map((_, i) => (
-      <button
-        key={i}
-        onClick={() => setIdx(i)}
-        aria-label={`Go to slide ${i + 1}`}
-        className={`h-1.5 rounded-full transition-all duration-300 ${
-          i === idx
-            ? "w-8 bg-white"
-            : "w-2 bg-white/35 hover:bg-white/60"
-        }`}
-      />
-    ))}
-  </div>
-</section>
+    </section>
 
   );
 }
@@ -993,7 +1005,7 @@ export function Nav({ onSearchClick }: { onSearchClick?: () => void }) {
     return () => window.removeEventListener("scroll", on);
   }, []);
   return (
-    <nav className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${scrolled ? "bg-background/80 backdrop-blur-xl" : "bg-gradient-to-b from-black/60 to-transparent"}`}>
+    <nav className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${scrolled ? "bg-background/70 backdrop-blur-xl" : "bg-gradient-to-b from-black/60 to-transparent"}`}>
       <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between gap-8 px-6 md:px-12">
         <div className="flex-1">
           <Link to="/" className="inline-flex items-center">
@@ -1001,7 +1013,7 @@ export function Nav({ onSearchClick }: { onSearchClick?: () => void }) {
           </Link>
         </div>
 
-        <div className="hidden md:flex items-center justify-center gap-6 text-sm text-muted-foreground">
+        <div className="hidden md:flex items-center justify-center gap-6 text-sm text-white/50">
           <Link to="/" className="hover:text-foreground transition" activeProps={{ className: "text-foreground" }}>Home</Link>
           <Link to="/browse" search={{ type: "movie" }} activeProps={{ className: "text-foreground" }} activeOptions={{ includeSearch: true }} className="hover:text-foreground transition">Movies</Link>
           <Link to="/browse" search={{ type: "tv" }} activeProps={{ className: "text-foreground" }} activeOptions={{ includeSearch: true }} className="hover:text-foreground transition">Series</Link>

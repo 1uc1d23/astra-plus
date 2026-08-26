@@ -586,13 +586,16 @@ video::-webkit-media-controls {
 
 /* ── Section label ── */
 .s-label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, .28);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    color: rgba(255, 255, 255, .62);
     padding: 8px 8px 5px;
     display: block;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
 }
 
 /* ── Row item (clickable toggle rows) ── */
@@ -746,9 +749,8 @@ video::-webkit-media-controls {
     justify-content: center;
     width: 22px;
     height: 22px;
-    border: 1px solid rgba(255, 255, 255, .12);
-    border-radius: 6px;
-    background: rgba(255, 255, 255, .05);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0);
     cursor: pointer;
     color: rgba(255, 255, 255, .7);
     transition: background .14s, border-color .14s;
@@ -757,8 +759,7 @@ video::-webkit-media-controls {
 }
 
 .s-sync-btn:hover {
-    background: rgba(255, 255, 255, .12);
-    border-color: rgba(255, 255, 255, .25);
+    background: rgba(255, 255, 255, .08);
     color: #fff;
 }
 
@@ -815,7 +816,7 @@ video::-webkit-media-controls {
     background: rgba(255, 255, 255, .06);
     color: rgba(255, 255, 255, .85);
     font-size: 12px;
-    padding: 7px 10px;
+    padding: 7px 12px;
     font-family: 'Geist', system-ui, -apple-system, "Segoe UI", Roboto, Arial !important;
     outline: none;
     display: flex;
@@ -897,7 +898,7 @@ video::-webkit-media-controls {
 .dyn-item {
     width: 100%;
     text-align: left;
-    padding: 7px 10px;
+    padding: 7px 12px;
     border-radius: 8px;
     border: none;
     background: transparent;
