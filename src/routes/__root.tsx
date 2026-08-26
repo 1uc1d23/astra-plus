@@ -79,6 +79,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
+        rel: "apple-touch-icon",
+        href: "/apple-touch-icon.png",
+      },
+      {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500"
       },
@@ -130,7 +134,7 @@ function TopLoadingBar() {
     } else {
       // Complete bar to 100%
       setProgress(100);
-      
+
       // Keep it visible at 100% briefly before disappearing
       timeout = setTimeout(() => {
         setVisible(false);
@@ -228,9 +232,8 @@ function MobileBottomNav() {
               className="relative flex flex-1 flex-col items-center justify-center py-2.5 focus:outline-none"
             >
               <Icon
-                className={`h-[18px] w-[18px] transition-opacity duration-200 ${
-                  item.isActive ? "opacity-100 text-white" : "opacity-50 text-white hover:opacity-70"
-                }`}
+                className={`h-[18px] w-[18px] transition-opacity duration-200 ${item.isActive ? "opacity-100 text-white" : "opacity-50 text-white hover:opacity-70"
+                  }`}
               />
             </Link>
           );
@@ -255,13 +258,13 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <Tooltip.Provider delayDuration={250} skipDelayDuration={100}>
-  <QueryClientProvider client={queryClient}>
-    <TopLoadingBar />
-    <div className="pb-16 md:pb-0">
-      <Outlet />
-    </div>
-    <MobileBottomNav />
-  </QueryClientProvider>
-</Tooltip.Provider>
+      <QueryClientProvider client={queryClient}>
+        <TopLoadingBar />
+        <div className="pb-16 md:pb-0">
+          <Outlet />
+        </div>
+        <MobileBottomNav />
+      </QueryClientProvider>
+    </Tooltip.Provider>
   );
 }
