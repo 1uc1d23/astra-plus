@@ -126,6 +126,7 @@ export function MovieCard({
             <button type="button" className="grid h-8 w-8 place-items-center rounded-full bg-white text-black transition hover:bg-gray-200" >
               <Play size={14} className="ml-0.5 fill-black" />
             </button>
+            <Rating value={media.vote_average} />
           </div>
         </div>
       </div>
@@ -172,11 +173,8 @@ export function Row({
 
   return (
     <section className="fade-up py-6">
-      <div className="mb-3 flex justify-between px-6 md:px-12">
+      <div className="mb-3 flex items-center justify-between px-6 md:px-12">
         <h2 className="text-lg font-semibold md:text-xl">{label}</h2>
-        <span className="text-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-          {items?.length ?? "…"} titles
-        </span>
       </div>
 
       <div
@@ -257,11 +255,12 @@ export function Hero({ items, onOpen, onPlay }: { items: Media[]; onOpen: (m: Me
         <div className="absolute inset-0 bg-black/20" />
       </div>
 
-      <div className="relative z-10 flex h-full items-end md:items-center">
-        <div
-          key={active.id}
-          className="max-w-2xl px-6 md:px-12 pb-16 md:pb-0"
-        >
+      <div className="relative z-10 flex h-full items-end justify-center md:items-center md:justify-start">
+  <div
+    key={active.id}
+    className="flex w-full max-w-2xl flex-col items-center px-6 pb-16 text-center md:items-start md:px-12 md:pb-0 md:text-left"
+  >
+
 
           {!detail ? (
             <div className="mb-6 h-16 md:h-24 w-64 md:w-96 rounded-2xl skeleton" />
@@ -336,7 +335,7 @@ export function Hero({ items, onOpen, onPlay }: { items: Media[]; onOpen: (m: Me
               className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 backdrop-blur-md px-5 py-3 text-sm font-medium transition hover:bg-white/20 hover:scale-105"
             >
               <ArrowUp size={16} />
-              Expand
+              Show More
             </button>
           </div>
         </div>
@@ -825,7 +824,7 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
                     {canScrollLeft && (
                       <button
                         onClick={() => episodeScrollRef.current?.scrollBy({ left: -400, behavior: "smooth" })}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 z-20 grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-black/70 text-white shadow-xl backdrop-blur-md transition hover:bg-white hover:text-black"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 z-20 grid h-8 w-8 place-items-center rounded-full border border-[#ffffff1a] bg-[#1a1a1a70] shadow-xs hover:bg-white hover:text-black !backdrop-blur-lg transition"
                       >
                         <ArrowLeft size={16} />
                       </button>
@@ -833,7 +832,7 @@ function DrawerBody({ media, onPlay, onOpen }: { media: Media & { _lastSeason?: 
                     {canScrollRight && (
                       <button
                         onClick={() => episodeScrollRef.current?.scrollBy({ left: 400, behavior: "smooth" })}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 z-20 grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-black/70 text-white shadow-xl backdrop-blur-md transition hover:bg-white hover:text-black"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 z-20 grid h-8 w-8 place-items-center rounded-full border border-[#ffffff1a] bg-[#1a1a1a70] shadow-xs hover:bg-white hover:text-black !backdrop-blur-lg transition"
                       >
                         <ArrowRight size={16} />
                       </button>
@@ -1023,7 +1022,7 @@ export function Nav({ onSearchClick }: { onSearchClick?: () => void }) {
         <div className="flex-1 flex justify-end items-center gap-3">
           <Link
             to="/search"
-            className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-surface pl-3 pr-4 text-sm text-muted-foreground transition hover:bg-surface-2 hover:text-foreground hover:scale-105"
+            className="inline-flex h-9 items-center gap-2 rounded-full border border-[#ffffff1a] bg-[#1a1a1a70] shadow-xs !backdrop-blur-lg transition px-3 text-sm text-muted-foreground transition hover:bg-surface-2 hover:text-foreground hover:scale-105"
           >
             <SearchIcon /> <span className="hidden sm:inline text-xs">Search</span>
           </Link>

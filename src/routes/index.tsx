@@ -173,10 +173,7 @@ function Home() {
 
     const targetUrl = embedUrl({ id: m.id, media_type: mediaType }, targetSeason, targetEpisode);
 
-    setPlaying(targetUrl);
-    if (typeof window !== "undefined") {
-      window.location.href = targetUrl;
-    }
+    window.location.href = targetUrl;
   };
 
   const heroItems = (trending.data?.results ?? []).filter(m => m.backdrop_path).slice(0, 6);
