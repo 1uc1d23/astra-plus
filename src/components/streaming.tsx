@@ -123,10 +123,9 @@ export function MovieCard({
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 p-3 opacity-0 transition duration-500 group-hover:translate-y-0 group-hover:opacity-100">
           <div className="flex items-center gap-2">
-            <div className="grid h-8 w-8 place-items-center rounded-full bg-white text-black">
+            <button type="button" className="grid h-8 w-8 place-items-center rounded-full bg-white text-black transition hover:bg-gray-200" >
               <Play size={14} className="ml-0.5 fill-black" />
-            </div>
-            <Rating value={media.vote_average} />
+            </button>
           </div>
         </div>
       </div>
@@ -243,20 +242,20 @@ export function Hero({ items, onOpen, onPlay }: { items: Media[]; onOpen: (m: Me
       ))}
 
       <div
-  className="pointer-events-none absolute inset-x-0 top-[46vh] h-[92vh] overflow-hidden
+        className="pointer-events-none absolute inset-x-0 top-[46vh] h-[92vh] overflow-hidden
     [mask-image:linear-gradient(#0000_0%,#000_12%,#000000e6_48%,#00000059_76%,#0000_100%)]"
->
-  <div className="absolute inset-[-8%] opacity-[0.24] md:opacity-[0.28]">
-    <img
-      src={IMG(list[idx].backdrop_path, "original")}
-      alt=""
-      className="h-full w-full scale-110 object-cover object-center
+      >
+        <div className="absolute inset-[-8%] opacity-[0.24] md:opacity-[0.28]">
+          <img
+            src={IMG(list[idx].backdrop_path, "original")}
+            alt=""
+            className="h-full w-full scale-110 object-cover object-center
         blur-[52px] saturate-[1.35] md:blur-[72px]"
-    />
-  </div>
+          />
+        </div>
 
-  <div className="absolute inset-0 bg-black/20" />
-</div>
+        <div className="absolute inset-0 bg-black/20" />
+      </div>
 
       <div className="relative z-10 flex h-full items-end md:items-center">
         <div
@@ -351,8 +350,8 @@ export function Hero({ items, onOpen, onPlay }: { items: Media[]; onOpen: (m: Me
             onClick={() => setIdx(i)}
             aria-label={`Go to slide ${i + 1}`}
             className={`h-1.5 rounded-full transition-all duration-300 ${i === idx
-                ? "w-8 bg-white"
-                : "w-2 bg-white/35 hover:bg-white/60"
+              ? "w-8 bg-white"
+              : "w-2 bg-white/35 hover:bg-white/60"
               }`}
           />
         ))}
