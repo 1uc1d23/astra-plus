@@ -87,6 +87,8 @@ export interface ContinueWatchingItem {
   media_type: "movie" | "tv";
   season?: number;
   episode?: number;
+  episodeName?: string;
+  still_path?: string | null;
   progress: number; // in seconds
   updatedAt: number; // timestamp in ms
   key: string;
@@ -104,15 +106,22 @@ export function getContinueWatchingList(): ContinueWatchingItem[] {
     const rawVal = localStorage.getItem(key);
     if (!rawVal) continue;
 
-    // Support both new JSON format { progress, updatedAt } and legacy raw numbers
+    // Support both new JSON format { progress, updatedAt, episodeName }
+    // and legacy raw numbers
     let progress = 0;
     let updatedAt = 0;
+    let episodeName: string | undefined;
 
     try {
       if (rawVal.startsWith("{")) {
         const parsed = JSON.parse(rawVal);
+
         progress = Number(parsed.progress) || 0;
         updatedAt = Number(parsed.updatedAt) || 0;
+        episodeName =
+          typeof parsed.episodeName === "string"
+            ? parsed.episodeName
+            : undefined;
       } else {
         progress = Number(rawVal) || 0;
       }
@@ -125,6 +134,7 @@ export function getContinueWatchingList(): ContinueWatchingItem[] {
     // TV format: resume_tv_{id}_{season}_{episode}
     if (key.startsWith("resume_tv_")) {
       const parts = key.split("_");
+
       if (parts.length === 5) {
         const id = Number(parts[2]);
         const season = Number(parts[3]);
@@ -136,21 +146,26 @@ export function getContinueWatchingList(): ContinueWatchingItem[] {
             media_type: "tv",
             season,
             episode,
+            episodeName,
             progress,
             updatedAt,
             key,
           };
+
           const existing = latestMap.get(id);
 
           if (!existing) {
             latestMap.set(id, newItem);
           } else {
-            // Prefer the item with a more recent timestamp; fall back to higher episode count if equal
+            // Prefer the item with a more recent timestamp;
+            // fall back to higher episode count if equal
             const isNewer = newItem.updatedAt > existing.updatedAt;
+
             const isSameTimeHigherEp =
               newItem.updatedAt === existing.updatedAt &&
               (season > (existing.season ?? 0) ||
-                (season === existing.season && episode > (existing.episode ?? 0)));
+                (season === (existing.season ?? 0) &&
+                  episode > (existing.episode ?? 0)));
 
             if (isNewer || isSameTimeHigherEp) {
               localStorage.removeItem(existing.key);
@@ -162,21 +177,33 @@ export function getContinueWatchingList(): ContinueWatchingItem[] {
         }
       }
     }
+
     // Movie format: resume_{id}
     else if (key.startsWith("resume_")) {
       const parts = key.split("_");
+
       if (parts.length === 2) {
         const id = Number(parts[1]);
+
         if (id) {
-          latestMap.set(id, { id, media_type: "movie", progress, updatedAt, key });
+          latestMap.set(id, {
+            id,
+            media_type: "movie",
+            progress,
+            updatedAt,
+            key,
+          });
         }
       }
     }
   }
 
-  // Sort strictly by most recent timestamp first (newest watched on the left)
-  return Array.from(latestMap.values()).sort((a, b) => b.updatedAt - a.updatedAt);
+  // Sort strictly by most recent timestamp first
+  return Array.from(latestMap.values()).sort(
+    (a, b) => b.updatedAt - a.updatedAt
+  );
 }
+
 
 export const api = {
   trending: (window: "day" | "week" = "week") => tmdb<{ results: Media[] }>(`/trending/all/${window}`),

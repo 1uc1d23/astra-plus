@@ -88,59 +88,83 @@ export function Rating({ value }: { value: number }) {
 }
 
 /* ============ Card ============ */
-export function MovieCard({
-  media,
-  onOpen,
-  size = "md",
-}: {
-  media: Media & { _lastSeason?: number; _lastEpisode?: number };
+export function MovieCard({ media, onOpen, size = "md" }: {
+  media: Media & {
+    _lastSeason?: number;
+    _lastEpisode?: number;
+    _lastEpisodeName?: string;
+    _episodeStillPath?: string | null;
+    _progress?: number;
+    _watchedTime?: string;
+  };
   onOpen: (m: Media) => void;
-  size?: "md" | "lg" | "full";
+  size?: "md" | "lg" | "xl" | "full";
 }) {
-  const w = size === "full" ? "" : "w-40 md:w-44";
+  const w =
+    size === "full" ? "" :
+      size === "xl" ? "w-44 md:w-66" :
+        "w-30 md:w-44";
+
   const tv = isTV(media);
+  const resume = media._lastSeason && media._lastEpisode;
+  const isContinueWatching = typeof media._progress === "number";
+  const image = media._episodeStillPath || (isContinueWatching ? media.backdrop_path : null) || media.poster_path;
 
   return (
-    <button
-      onClick={() => onOpen(media)}
-      className={`group relative shrink-0 ${w} text-left focus:outline-none`}
-    >
-      <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-surface transition duration-500 group-hover:-translate-y-1">
-        {media.poster_path ? (
-          <img
-            src={IMG(media.poster_path, "w500")}
-            alt={title(media)}
-            loading="lazy"
-            className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-          />
+    <button onClick={() => onOpen(media)} className={`relative shrink-0 ${w} text-left focus:outline-none`}>
+      <div className={`relative overflow-hidden rounded-lg bg-surface ${isContinueWatching || resume ? "aspect-[16/10]" : "aspect-[2/3]"}`}>
+        {image ? (
+          <img src={IMG(image, "w500")} alt={title(media)} loading="lazy" className="h-full w-full object-cover" />
         ) : (
-          <div className="grid h-full place-items-center text-xs text-muted-foreground">
-            No image
+          <div className="grid h-full place-items-center text-xs text-muted-foreground">No image</div>
+        )}
+
+        {isContinueWatching && (
+          <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-background/20 to-background/20 pointer-events-none z-10" />
+        )}
+
+        {isContinueWatching && (
+          <div className="absolute inset-0 z-20 grid place-items-center">
+            <span className="group grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-black/50 text-white shadow-lg backdrop-blur-md transition-colors duration-200 hover:bg-white hover:text-black">
+              <Play
+                size={18}
+                className="ml-0.5 fill-white text-white transition-colors duration-200 group-hover:fill-black group-hover:text-black"
+              />
+            </span>
           </div>
         )}
 
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-90" />
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 p-3 opacity-0 transition duration-500 group-hover:translate-y-0 group-hover:opacity-100">
-          <div className="flex items-center gap-2">
-            <button type="button" className="grid h-8 w-8 place-items-center rounded-full bg-white text-black transition hover:bg-gray-200" >
-              <Play size={14} className="ml-0.5 fill-black" />
-            </button>
-            <Rating value={media.vote_average} />
+        {media._watchedTime && (
+          <div className="absolute bottom-3 right-2 text-[11px] text-white/90 z-30 shadow-md">
+            {media._watchedTime}
           </div>
-        </div>
+        )}
+
+        {typeof media._progress === "number" && media._progress > 0 && (
+          <div className="absolute left-2 right-2 bottom-2 h-0.5 bg-white/20 rounded-full z-20 overflow-hidden">
+            <div
+              className="h-full bg-accent"
+              style={{ width: `${media._progress}%` }}
+            />
+          </div>
+        )}
       </div>
 
       <div className="mt-2 px-0.5">
         <div className="line-clamp-1 text-sm font-medium">{title(media)}</div>
-        <div className="truncate text-[11px] text-muted-foreground">
-          {media._lastSeason && media._lastEpisode ? (
-            <span className="text-accent font-semibold">
-              S{media._lastSeason} E{media._lastEpisode}
-            </span>
+        <div className="flex min-w-0 items-center text-[11px] text-muted-foreground">
+          {resume ? (
+            <>
+              <span>S{media._lastSeason} E{media._lastEpisode}</span>
+              <span className="mx-1 opacity-60">•</span>
+              <span className="min-w-0 truncate">{media._lastEpisodeName || "Episode"}</span>
+            </>
           ) : (
             <>
-              {year(media) || "—"} <span className="mx-1 opacity-80">·</span> {tv ? "Series" : "Movie"}
+              <span>{year(media) || "—"}</span>
+              <span className="mx-1 opacity-80">·</span>
+              <span>{tv ? "Series" : "Movie"}</span>
             </>
           )}
         </div>
@@ -196,7 +220,7 @@ export function Row({
           )) ?? Array.from({ length: 10 }, (_, i) => (
             <div
               key={i}
-              className={`shrink-0 ${size === "lg" ? "w-52 md:w-60" : "w-40 md:w-44"} aspect-[2/3] rounded-xl skeleton`}
+              className={`shrink-0 w-40 md:w-44 aspect-[2/3] rounded-xl skeleton`}
             />
           ))}
         </div>
@@ -256,10 +280,10 @@ export function Hero({ items, onOpen, onPlay }: { items: Media[]; onOpen: (m: Me
       </div>
 
       <div className="relative z-10 flex h-full items-end justify-center md:items-center md:justify-start">
-  <div
-    key={active.id}
-    className="flex w-full max-w-2xl flex-col items-center px-6 pb-16 text-center md:items-start md:px-12 md:pb-0 md:text-left"
-  >
+        <div
+          key={active.id}
+          className="flex w-full max-w-2xl flex-col items-center px-6 pb-16 text-center md:items-start md:px-12 md:pb-0 md:text-left"
+        >
 
 
           {!detail ? (

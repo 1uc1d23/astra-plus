@@ -255,6 +255,8 @@ window.MEDIA_INFO = {
                 const episodeData = await episodeRes.json();
                 const showTitle = showData.name || showData.original_name || 'Unknown Show';
                 episodeTitle = episodeData.name || 'Episode';
+                window.TMDB_EPISODE_NAME = episodeTitle;
+
                 const title = `S${window.TMDB_SEASON} E${window.TMDB_EPISODE} "${episodeTitle}"`;
                 const imagesRes = await fetch(`https://api.themoviedb.org/3/tv/${window.TMDB_ID}/images?api_key=${window.TMDB_API_KEY}&include_image_language=en,null`);
                 const imagesData = await imagesRes.json();
@@ -299,12 +301,14 @@ window.MEDIA_INFO = {
     // ─────────────────────────────────────────
     function savePlaybackTime() {
         if (!window.TMDB_ID) return;
+
         if (Number.isFinite(video.currentTime) && video.currentTime > 5) {
             localStorage.setItem(
                 getResumeKey(),
                 JSON.stringify({
                     progress: video.currentTime,
-                    updatedAt: Date.now()
+                    updatedAt: Date.now(),
+                    episodeName: window.TMDB_EPISODE_NAME || ""
                 })
             );
         }

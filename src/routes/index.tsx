@@ -93,43 +93,95 @@ function ProviderRow({
   );
 }
 
-function ContinueWatchingRow({ onOpen }: { onOpen: (m: Media) => void }) {
-  const [historyItems] = useState<ContinueWatchingItem[]>(() =>
-    getContinueWatchingList()
-  );
+function formatDuration(sec: number): string {
+  const hours = Math.floor(sec / 3600);
+  const minutes = Math.floor((sec % 3600) / 60);
+  const seconds = Math.floor(sec % 60);
 
+  const paddedMinutes = hours > 0 ? String(minutes).padStart(2, "0") : String(minutes);
+  const paddedSeconds = String(seconds).padStart(2, "0");
+
+  if (hours > 0) {
+    return `${hours}:${paddedMinutes}:${paddedSeconds}`;
+  }
+  return `${minutes}:${paddedSeconds}`;
+}
+
+function ContinueWatchingRow({ onOpen }: { onOpen: (m: Media) => void }) {
   const { data: mediaList, isLoading } = useQuery({
-    queryKey: ["continue-watching-list", historyItems],
+    queryKey: ["continue-watching-list"],
     queryFn: async () => {
+      const historyItems = getContinueWatchingList();
       if (!historyItems.length) return [];
+
       const results = await Promise.all(
         historyItems.map(async (item) => {
           try {
-            const data = item.media_type === "tv" ? await api.tv(item.id) : await api.movie(item.id);
+            const data =
+              item.media_type === "tv"
+                ? await api.tv(item.id)
+                : await api.movie(item.id);
+
+            let episodeStillPath: string | null = null;
+            let totalSeconds = 0;
+
+            if (
+              item.media_type === "tv" &&
+              item.season &&
+              item.episode
+            ) {
+              const seasonData = await api.season(item.id, item.season);
+
+              const episode = seasonData.episodes.find(
+                (ep) => ep.episode_number === item.episode
+              );
+
+              episodeStillPath = episode?.still_path ?? null;
+              
+              const runtimeMinutes = episode?.runtime || data.episode_run_time?.[0] || 45;
+              totalSeconds = runtimeMinutes * 60;
+            } else {
+              const runtimeMinutes = data.runtime || 120;
+              totalSeconds = runtimeMinutes * 60;
+            }
+
+            const progressPercent = totalSeconds > 0 
+              ? Math.min(100, Math.max(0, (item.progress / totalSeconds) * 100)) 
+              : 0;
+
+            const watchedTimeStr = item.progress > 0 
+              ? formatDuration(item.progress) 
+              : undefined;
+
             return {
               ...data,
-              media_type: item.media_type, // Preserve exact TV / Movie flag
+              media_type: item.media_type,
               _lastSeason: item.season,
               _lastEpisode: item.episode,
+              _lastEpisodeName: item.episodeName,
+              _episodeStillPath: episodeStillPath,
+              _progress: progressPercent,
+              _watchedTime: watchedTimeStr,
             };
           } catch {
             return null;
           }
         })
       );
+
       return results.filter(Boolean) as Media[];
     },
-    enabled: historyItems.length > 0,
+    refetchOnWindowFocus: true,
   });
 
-  if (!historyItems.length) return null;
+  if (!mediaList || mediaList.length === 0) return null;
 
   return (
     <Row
       label="Continue Watching"
       items={isLoading ? undefined : mediaList}
       onOpen={onOpen}
-      size="lg"
+      size="xl"
     />
   );
 }
@@ -152,7 +204,16 @@ function Home() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const play = (m: Media & { _lastSeason?: number; _lastEpisode?: number }, s?: number, e?: number) => {
+  const play = (
+    m: Media & {
+      _lastSeason?: number;
+      _lastEpisode?: number;
+      _lastEpisodeName?: string;
+    },
+    s?: number,
+    e?: number
+  ) => {
+
     // 1. Check if unreleased
     const releaseDateStr = m.release_date || m.first_air_date;
     if (releaseDateStr) {
@@ -184,8 +245,11 @@ function Home() {
       {heroItems.length ? (
         <Hero items={heroItems} onOpen={openDetail} onPlay={(m) => play(m)} />
       ) : (
-        <div className="h-[92vh] skeleton" />
+        <div className="relative h-[92vh] skeleton overflow-hidden">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent to-background" />
+        </div>
       )}
+
 
       <div className="relative -mt-1 md:-mt-20 z-10">
         <ContinueWatchingRow onOpen={openDetail} />
