@@ -1770,57 +1770,103 @@ window.MEDIA_INFO = {
     // ─────────────────────────────────────────
     function updateCaptionLanguageMenu() {
         const selectedTrack = getSelectedSubtitle();
-        const languageMenu = document.getElementById('captionLanguageMenu');
-        const languageBtn = document.getElementById('captionLanguageBtn');
-        if (!languageMenu) return;
-        languageMenu.replaceChildren();
+        const menu = document.getElementById('captionLanguageMenu');
+        const langBtn = document.getElementById('captionLanguageBtn');
+        if (!menu) return;
 
-        if (availableSubtitleTracks.length === 0) {
-            if (languageBtn) languageBtn.disabled = true;
-            const noSubsBtn = document.createElement('button');
-            noSubsBtn.className = 'dyn-item active';
-            noSubsBtn.type = 'button';
-            noSubsBtn.innerHTML = `No subtitles <span class="dyn-check"><i data-feather="check"></i></span>`;
-            languageMenu.appendChild(noSubsBtn);
-            if (typeof feather !== 'undefined') feather.replace({ width: 14, height: 14 });
-            if (captionLanguageValue) captionLanguageValue.textContent = 'Off';
+        menu.replaceChildren();
+
+        const flags = {
+            english: 'gb', spanish: 'es', french: 'fr', german: 'de', italian: 'it', portuguese: 'pt', arabic: 'sa', hindi: 'in', urdu: 'pk', russian: 'ru',
+            chinese: 'cn', japanese: 'jp', korean: 'kr', turkish: 'tr', dutch: 'nl', polish: 'pl', ukrainian: 'ua', vietnamese: 'vn', thai: 'th', indonesian: 'id',
+            malay: 'my', filipino: 'ph', swedish: 'se', norwegian: 'no', danish: 'dk', finnish: 'fi', czech: 'cz', slovak: 'sk', hungarian: 'hu', romanian: 'ro',
+            bulgarian: 'bg', croatian: 'hr', serbian: 'rs', slovenian: 'si', bosnian: 'ba', macedonian: 'mk', albanian: 'al', greek: 'gr', hebrew: 'il', persian: 'ir',
+            bengali: 'bd', punjabi: 'pk', gujarati: 'in', marathi: 'in', tamil: 'in', telugu: 'in', kannada: 'in', malayalam: 'in', nepali: 'np', sinhala: 'lk',
+            swahili: 'ke', amharic: 'et', somali: 'so', afrikaans: 'za', zulu: 'za', xhosa: 'za', yoruba: 'ng', igbo: 'ng', hausa: 'ng', malagasy: 'mg',
+            kazakh: 'kz', uzbek: 'uz', azerbaijani: 'az', armenian: 'am', georgian: 'ge', belarusian: 'by', lithuanian: 'lt', latvian: 'lv', estonian: 'ee', icelandic: 'is',
+            irish: 'ie', welsh: 'gb', scottish_gaelic: 'gb', basque: 'es', catalan: 'es', galician: 'es', luxembourgish: 'lu', maltese: 'mt', faroese: 'fo', haitian_creole: 'ht',
+            maori: 'nz', samoan: 'ws', tongan: 'to', fijian: 'fj', hawaiian: 'us', guarani: 'py', quechua: 'pe', aymara: 'bo', nahuatl: 'mx', mongolian: 'mn',
+            tibetan: 'cn', burmese: 'mm', khmer: 'kh', lao: 'la', kurdish: 'iq', pashto: 'af', tajik: 'tj', turkmen: 'tm', kyrgyz: 'kg', uyghur: 'cn',
+            tatar: 'ru', bashkir: 'ru', yiddish: 'il', aramaic: 'iq', sanskrit: 'in', assamese: 'in', odia: 'in', konkani: 'in', maithili: 'in', sindhi: 'pk',
+            amharic: 'et', tigrinya: 'er', wolof: 'sn', lingala: 'cd', kinyarwanda: 'rw', kirundi: 'bi', shona: 'zw', sesotho: 'ls', tswana: 'bw', chichewa: 'mw'
+
+        };
+
+        if (!availableSubtitleTracks.length) {
+            if (langBtn) langBtn.disabled = true;
+
+            menu.innerHTML = `
+            <button class="dyn-item active" type="button">
+                No subtitles
+                <span class="dyn-check">
+                    <i data-feather="check"></i>
+                </span>
+            </button>`;
+
+            if (captionLanguageValue)
+                captionLanguageValue.textContent = 'Off';
+
+            if (typeof feather !== 'undefined')
+                feather.replace({ width: 14, height: 14 });
+
             return;
         }
 
-        if (languageBtn) languageBtn.disabled = false;
+        if (langBtn) langBtn.disabled = false;
 
         const offBtn = document.createElement('button');
-        offBtn.className = (!captionsEnabled || !selectedTrack) ? 'dyn-item active' : 'dyn-item';
+        offBtn.className = !captionsEnabled || !selectedTrack
+            ? 'dyn-item active' : 'dyn-item';
         offBtn.type = 'button';
-        offBtn.innerHTML = `Off <span class="dyn-check"><i data-feather="check"></i></span>`;
+        offBtn.innerHTML = `Off <span class="dyn-check">
+        <i data-feather="check"></i></span>`;
         offBtn.onclick = () => window.selectLanguage('', 'Off');
-        languageMenu.appendChild(offBtn);
+        menu.appendChild(offBtn);
 
         availableSubtitleTracks.forEach(track => {
+            const key = track.label.toLowerCase()
+                .replace(/\d+/g, '').trim().split(' ')[0];
+
+            const code = flags[key] || '';
+            const img = code
+                ? `<img src="https://flagcdn.com/w80/${code}.png"
+                style="width:20px;height:auto;object-fit:cover;
+                margin-right:4px;">`
+                : '';
+
             const btn = document.createElement('button');
-            const isActive = captionsEnabled && selectedTrack && track.url === captionSettings.languageUrl;
-            const cleanLangKey = track.label.replace(/\d+/g, '').trim().split(' ')[0];
-            let flagEmoji = '';
-            if (window.languageFlags[cleanLangKey]) {
-                const flagData = window.languageFlags[cleanLangKey];
-                // Uses the exact Apple format you requested dynamically: name + unicode suffix
-                flagEmoji = `<img src="https://em-content.zobj.net/source/apple/453/flag-${flagData.name}_${flagData.unicode}.png" style="width:18px;height:13px;object-fit:cover;display:inline-block;vertical-align:middle;margin-right:6px;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,0.3);">`;
-            }
-            btn.className = isActive ? 'dyn-item active' : 'dyn-item';
+            const active = captionsEnabled && selectedTrack &&
+                track.url === captionSettings.languageUrl;
+
+            btn.className = active ? 'dyn-item active' : 'dyn-item';
             btn.type = 'button';
-            btn.setAttribute('data-url', track.url);
-            btn.innerHTML = `<div class="dyn-item-left">${flagEmoji}<span>${track.label}</span></div><span class="dyn-check"><i data-feather="check"></i></span>`;
-            btn.onclick = () => window.selectLanguage(track.url, track.label);
-            languageMenu.appendChild(btn);
+            btn.dataset.url = track.url;
+
+            btn.innerHTML = `
+            <div class="dyn-item-left">
+                ${img}<span>${track.label}</span>
+            </div>
+            <span class="dyn-check">
+                <i data-feather="check"></i>
+            </span>`;
+
+            btn.onclick = () =>
+                window.selectLanguage(track.url, track.label);
+
+            menu.appendChild(btn);
         });
 
-        if (typeof feather !== 'undefined') feather.replace({ width: 14, height: 14 });
+        if (typeof feather !== 'undefined')
+            feather.replace({ width: 14, height: 14 });
 
-        const displayLabel = captionsEnabled && selectedTrack ? selectedTrack.label : 'Off';
-        const titleEl = document.getElementById('captionLanguageTitle');
-        if (titleEl) titleEl.textContent = displayLabel;
-        if (captionLanguageValue) captionLanguageValue.textContent = displayLabel;
+        const label = captionsEnabled && selectedTrack
+            ? selectedTrack.label : 'Off';
+
+        const title = document.getElementById('captionLanguageTitle');
+        if (title) title.textContent = label;
+        if (captionLanguageValue) captionLanguageValue.textContent = label;
     }
+
 
     window.languageFlags = window.languageFlags || {};
 

@@ -15,8 +15,10 @@ body {
 :focus {
     outline: none;
 }
+
 * {
-    user-select: none;}
+    user-select: none;
+}
 
 html,
 body {
@@ -162,19 +164,18 @@ video::-webkit-media-controls {
     background: rgba(255, 255, 255, .92);
     color: #111;
 }
+
 .shadow-overlay {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
 
-    background: linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0.6) 0%,
-        rgba(0, 0, 0, 0.08) 20%,
-        rgba(0, 0, 0, 0.08) 80%,
-        rgba(0, 0, 0, 0.6) 100%
-    );
+    background: linear-gradient(to bottom,
+            rgba(0, 0, 0, 0.6) 0%,
+            rgba(0, 0, 0, 0.08) 20%,
+            rgba(0, 0, 0, 0.08) 80%,
+            rgba(0, 0, 0, 0.6) 100%);
 
     opacity: 0;
     transition: opacity .18s ease;
@@ -239,6 +240,25 @@ video::-webkit-media-controls {
     height: 6px;
 }
 
+.progress-thumb {
+    position: absolute;
+    top: 50%;
+    opacity: 0;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #fff;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    pointer-events: none;
+    transition: transform 0.1s ease;
+}
+
+.progress-wrap:hover .progress-thumb {
+    transform: translate(-50%, -50%) scale(1.15);
+}
+
 .progress-buffer,
 .progress-fill {
     position: absolute;
@@ -276,12 +296,13 @@ video::-webkit-media-controls {
 }
 
 .preview-thumb-box {
-    display: none; 
+    display: none;
     background-repeat: no-repeat;
     border-radius: 4px;
     box-shadow: 0 6px 16px rgba(0, 0, 0, .35);
     background-color: #000;
 }
+
 .preview-time {
     color: #fff;
     font-size: 12px;
@@ -330,12 +351,15 @@ video::-webkit-media-controls {
 }
 
 .progress-times {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
-#totalTime {text-align: right;}
+
+#totalTime {
+    text-align: right;
+}
 
 .progress-time {
     flex: 0 0 auto;
@@ -347,6 +371,7 @@ video::-webkit-media-controls {
     white-space: nowrap;
     cursor: default;
 }
+
 .progress-wrap {
     position: relative;
     flex: 1;
@@ -395,7 +420,10 @@ video::-webkit-media-controls {
     line-height: 1;
     pointer-events: none;
 }
-#playIcon {font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24 !important;}
+
+#playIcon {
+    font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24 !important;
+}
 
 .btn.active .material-symbols-outlined {
     font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
@@ -450,7 +478,7 @@ video::-webkit-media-controls {
 #volumeSlider {
     width: 90px;
     cursor: pointer;
-    accent-color: white;
+    accent-color: var(--accent);
     opacity: .85;
     height: 4px;
 }
@@ -538,7 +566,7 @@ video::-webkit-media-controls {
     width: 80%;
     height: 2px;
     border-radius: 2px 2px 0 0;
-    background: #fff;
+    background: var(--accent);
     opacity: 0;
     transform: scaleX(0.4);
     transition: opacity .18s ease, transform .22s cubic-bezier(.16, 1, .3, 1);
@@ -551,7 +579,6 @@ video::-webkit-media-controls {
 
 .settings-tab.active {
     color: #fff;
-    background: rgba(255, 255, 255, 0.06);
 }
 
 .settings-tab.active::after {
@@ -731,7 +758,7 @@ video::-webkit-media-controls {
 
 .caption-control input[type="range"] {
     width: 100%;
-    accent-color: #fff;
+    accent-color: var(--accent);
     height: 3px;
     cursor: pointer;
 }
@@ -746,7 +773,7 @@ video::-webkit-media-controls {
 
 .s-sync-row input[type="range"] {
     flex: 1;
-    accent-color: #fff;
+    accent-color: var(--accent);
     cursor: pointer;
 }
 
@@ -805,6 +832,7 @@ video::-webkit-media-controls {
     transition: color .14s ease;
     margin-top: 8px;
 }
+
 #captionSyncReset:hover {
     color: rgba(255, 255, 255, .7);
 }
@@ -1008,6 +1036,7 @@ video::-webkit-media-controls {
     user-select: none;
     z-index: 60;
 }
+
 .speedToast.show {
     opacity: 1;
     transform: translateX(-50%) translateY(6px);
@@ -1077,7 +1106,7 @@ video::-webkit-media-controls {
 .netflix-shadow {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, .6);
+    background: linear-gradient(to right, rgba(0, 0, 0, .8), rgba(0, 0, 0, .5));
 }
 
 .netflix-content {
@@ -1314,6 +1343,7 @@ video::-webkit-media-controls {
     opacity: 1;
     visibility: visible;
 }
+
 .player-wrap.controls-visible .phone-player-controls button {
     pointer-events: auto;
 }
@@ -1579,7 +1609,8 @@ video::-webkit-media-controls {
         transform 0.55s cubic-bezier(.16, 1, .3, 1) 0.6s,
         background 0.15s ease;
 }
-#ls-status-panel:hover{
+
+#ls-status-panel:hover {
     background: rgba(67, 67, 68, 0.2);
 }
 
@@ -1894,7 +1925,7 @@ video::-webkit-media-controls {
     width: 36px;
     height: 4px;
     border-radius: 99px;
-    background: rgba(255,255,255,0.18);
+    background: rgba(255, 255, 255, 0.18);
     transition: background 0.15s, width 0.15s;
 }
 
@@ -1919,7 +1950,7 @@ video::-webkit-media-controls {
     align-items: center;
     justify-content: space-between;
     padding: 10px 16px 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .ep-drawer-title {
@@ -1929,9 +1960,10 @@ video::-webkit-media-controls {
     font-weight: 600;
     gap: 6px;
     letter-spacing: 0.01em;
-    color: rgba(255,255,255,0.9);
+    color: rgba(255, 255, 255, 0.9);
 }
-.ep-drawer-title-icon{
+
+.ep-drawer-title-icon {
     width: 20px;
     height: 18px;
 }
@@ -1941,17 +1973,17 @@ video::-webkit-media-controls {
     font-size: 13px !important;
     padding: 6px 12px !important;
     min-width: 115px;
-    background: rgba(255,255,255,0.04) !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-radius: 999px !important;
-    color: rgba(255,255,255,0.85) !important;
+    color: rgba(255, 255, 255, 0.85) !important;
     gap: 6px !important;
     justify-content: space-between !important;
 }
 
 .ep-season-dropdown:hover {
-    background: rgba(255,255,255,0.1) !important;
-    border-color: rgba(255,255,255,0.16) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.16) !important;
 }
 
 #ep-season-wrap .dyn-menu {
@@ -1980,15 +2012,19 @@ video::-webkit-media-controls {
     margin-bottom: 10vh;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.12) transparent;
+    scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
 }
 
 .ep-list::-webkit-scrollbar {
     width: 4px;
 }
-.ep-list::-webkit-scrollbar-track { background: transparent; }
+
+.ep-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
 .ep-list::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.12);
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 99px;
 }
 
@@ -2006,26 +2042,34 @@ video::-webkit-media-controls {
 }
 
 @keyframes ep-fade-in {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .ep-item:hover {
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .ep-item:active {
-    background: rgba(255,255,255,0.08);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 /* Currently watching highlight */
 .ep-item--current {
-    background: rgba(255,255,255,0.04);
-    padding-left: 16px; /* compensate for the border */
+    background: rgba(255, 255, 255, 0.04);
+    padding-left: 16px;
+    /* compensate for the border */
 }
 
 .ep-item--current:hover {
-    background: rgba(255,255,255,0.07);
+    background: rgba(255, 255, 255, 0.07);
 }
 
 /* ── Thumbnail ───────────────────────────────────────────────── */
@@ -2036,7 +2080,7 @@ video::-webkit-media-controls {
     height: 68px;
     border-radius: 8px;
     overflow: hidden;
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .ep-thumb {
@@ -2055,8 +2099,8 @@ video::-webkit-media-controls {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255,255,255,0.04);
-    color: rgba(255,255,255,0.25);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.25);
 }
 
 .ep-watch-progress {
@@ -2065,7 +2109,7 @@ video::-webkit-media-controls {
     right: 0;
     bottom: 0;
     height: 28px;
-    background: linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.38) 46%, rgba(0,0,0,0));
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.38) 46%, rgba(0, 0, 0, 0));
     z-index: 3;
     pointer-events: none;
 }
@@ -2085,7 +2129,7 @@ video::-webkit-media-controls {
 .ep-watch-progress-fill {
     height: 3px;
     background: var(--accent);
-    width: calc(var(--progress-width, 0%) - 12px) !important; 
+    width: calc(var(--progress-width, 0%) - 12px) !important;
 }
 
 /* ── Currently-watching overlay on thumbnail ─────────────────── */
@@ -2095,7 +2139,7 @@ video::-webkit-media-controls {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0,0,0,0.45);
+    background: rgba(0, 0, 0, 0.45);
 }
 
 /* Container for the sound wave bars */
@@ -2104,7 +2148,7 @@ video::-webkit-media-controls {
     align-items: center;
     justify-content: center;
     gap: 2px;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
     padding: 9px 7px;
     border-radius: 50%;
@@ -2125,15 +2169,24 @@ video::-webkit-media-controls {
     animation: bounceWave 0.5s ease-in-out infinite alternate;
 }
 
-.ep-wave-icon span:nth-child(1) { animation-delay: 0s; }
-.ep-wave-icon span:nth-child(2) { animation-delay: -0.4s; }
-.ep-wave-icon span:nth-child(3) { animation-delay: 0s; }
+.ep-wave-icon span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.ep-wave-icon span:nth-child(2) {
+    animation-delay: -0.4s;
+}
+
+.ep-wave-icon span:nth-child(3) {
+    animation-delay: 0s;
+}
 
 /* The fluid stretching animation loop */
 @keyframes bounceWave {
     0% {
         transform: scaleY(0.3);
     }
+
     100% {
         transform: scaleY(1.0);
     }
@@ -2179,19 +2232,19 @@ video::-webkit-media-controls {
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.7);
-    background: rgba(255,255,255,0.1);
+    color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.1);
     padding: 2px 7px 2px 5px;
     margin-left: auto;
     border-radius: 99px;
-    border: 1px solid rgba(255,255,255,0.12);
+    border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .ep-title {
     font-size: 14px;
     font-weight: 500;
     letter-spacing: 0.01em;
-    color: rgba(255,255,255,0.88);
+    color: rgba(255, 255, 255, 0.88);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2221,21 +2274,23 @@ video::-webkit-media-controls {
     justify-content: center;
     gap: 12px;
     padding: 40px 0;
-    color: rgba(255,255,255,0.3);
+    color: rgba(255, 255, 255, 0.3);
     font-size: 13px;
 }
 
 .ep-loading-spinner {
     width: 22px;
     height: 22px;
-    border: 2px solid rgba(255,255,255,0.08);
-    border-top-color: rgba(255,255,255,0.5);
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    border-top-color: rgba(255, 255, 255, 0.5);
     border-radius: 50%;
     animation: ep-spin 0.7s linear infinite;
 }
 
 @keyframes ep-spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* ── Error state ─────────────────────────────────────────────── */
@@ -2246,7 +2301,7 @@ video::-webkit-media-controls {
     justify-content: center;
     gap: 10px;
     padding: 40px 0;
-    color: rgba(255,255,255,0.3);
+    color: rgba(255, 255, 255, 0.3);
     font-size: 13px;
 }
 
